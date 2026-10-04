@@ -29,9 +29,9 @@ const newDay = (sleep = 6.6 + Math.random() * 1.6) => ({ steps: 0, sleep: +sleep
 const G0 = () => ({ v: 4, total: 3540, streak: 21, coins: 36, weekLP: 980, dow: 3, vital: 'happy', away: 0, revival: null, stickers: 3, owned: {}, theme: null, potions: 0, muted: false, preview: null,
   today: { ...newDay(7.4), steps: 3331 } });
 let G;
-try { G = JSON.parse(localStorage.getItem('eli_life')); } catch (e) { G = null; }
+try { G = JSON.parse(localStorage.getItem('eli_world')); } catch (e) { G = null; }
 if (!G || G.v !== 4) G = G0();
-const saveG = () => { try { localStorage.setItem('eli_life', JSON.stringify(G)); } catch (e) {} };
+const saveG = () => { try { localStorage.setItem('eli_world', JSON.stringify(G)); } catch (e) {} };
 
 /* ── sound + haptics (WebAudio synth, no files) ── */
 const SFX = {

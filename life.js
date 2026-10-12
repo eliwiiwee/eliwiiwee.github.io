@@ -76,7 +76,7 @@ function popNum(host, x, y, text, cls = '') {
   const p = document.createElement('div'); p.className = 'popnum ' + cls; p.innerHTML = text; p.style.left = x + 'px'; p.style.top = y + 'px'; host.append(p);
   p.animate([{ transform: 'translate(-50%,0) scale(.4)', opacity: 0 }, { transform: 'translate(-50%,-30px) scale(1.15)', opacity: 1, offset: .25 }, { transform: 'translate(-50%,-44px) scale(1)', opacity: 1, offset: .75 }, { transform: 'translate(-50%,-80px) scale(.9)', opacity: 0 }], { duration: 1700, easing: 'ease-out' }).fin.then(() => p.remove());
 }
-const coinIc = '<img src="assets/i_coin.webp" alt="" style="width:22px;height:22px">';
+const coinIc = '<img src="assets/c3_face.png" alt="" style="width:24px;height:24px;filter:drop-shadow(0 2px 3px rgba(150,90,0,.35))">';
 const tierOf = total => LPX.tier(LPX.level(total));
 const avTier = (img, total, extra = '') => `<span class="avt t-${tierOf(total).key} ${extra}"><img src="${A(img)}" alt=""></span>`;
 function notify(title, text, img = 'pet5') {

@@ -65,7 +65,7 @@ LIFE.world = pg => {
     <i class="hd-bar" style="${at(311, 194, 473, 216)}"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i>
     <img class="hd-ic" src="assets/hd_leaf.png" style="${at(436, 82, 502, 150)}" alt="">
     ${spk(at(45, 58, 98, 108), -30)}
-    <button class="hd-card hd-coin press" style="${at(630, 115, 852, 212)};--d:.05s" data-go="treasury"></button>
+    <button class="hd-card hd-coin coinchip2 press" style="${at(630, 115, 852, 212)};--d:.05s" data-go="treasury"></button>
     <img class="hd-ic" src="assets/hd_coin.png" style="${at(642, 122, 725, 205)}" alt="">
     ${tx(at(732, 140, 832, 178), 100, 'coin', `<b data-coins>${wcoins()}</b>`)}
     ${spk(at(606, 118, 646, 170), -70, 2)}
@@ -154,18 +154,19 @@ LIFE.world = pg => {
   };
   const drop = () => {
     if (cur !== 'world' || (G.today.c3 || 0) + coins.length >= CAP || coins.length >= 3) return;
-    const [x, y] = spot(), c = T3.coin(pg, { x, y, size: 42, cls: 'pop' });
+    const [x, y] = spot(), c = T3.coin(pg, { x, y, size: 46, cls: 'pop' });
     c.x = x; c.y = y; coins.push(c);
     c.addEventListener('animationend', () => c.classList.remove('pop'), { once: true });
     c.addEventListener('click', () => {
       if (c.classList.contains('got')) return;
       c.classList.add('got'); coins.splice(coins.indexOf(c), 1);
       G.today.c3 = (G.today.c3 || 0) + 1; saveG(); buzz(12);
-      burst(pg, x, y, { n: 10, dist: 46, size: 5, colors: ['#F2C14E', '#FFE59A', '#fff'], shape: 'star' });
-      giveCoins(1, 'เก็บเหรียญในสวน', c);
+      popNum(pg, x, y - 44, '+1', 'gold');
+      burst(pg, x, y - 30, { n: 16, dist: 60, size: 6, colors: ['#F2C14E', '#FFE59A', '#fff'], shape: 'star' });
+      later(380, () => giveCoins(1, 'เก็บเหรียญในสวน', c));   // the coins fly to the counter from the top of the jump
       if (!busy && !petting) { eli.setFace(x < eli.x ? -1 : 1); eli.pose('cheer1'); eli.jump(26, 380).then(() => eli.pose(rest)); }
       if (G.today.c3 >= CAP) eli.say('เก็บครบแล้ววันนี้! พรุ่งนี้มาใหม่นะ', 1800);
-      later(550, () => c.remove());
+      later(800, () => c.remove());
       later(5000, drop);
     });
   };

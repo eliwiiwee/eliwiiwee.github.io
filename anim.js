@@ -33,7 +33,7 @@ class Eli {
     const el = this.el = document.createElement('div');
     el.className = 'eli-m';   // not 'eli': that is also the ELi-home page class
     el.style.cssText = `left:${x}px;top:${y}px;--s:${size}px`;
-    el.innerHTML = '<i class="eli-sh"></i><div class="eli-mv"><div class="eli-sq"><div class="eli-pz"><img alt="น้อง ELi"></div></div></div><div class="eli-say"></div>';
+    el.innerHTML = '<i class="eli-sh"></i><div class="eli-3d"><div class="eli-mv"><div class="eli-sq"><div class="eli-pz"><img alt="น้อง ELi"></div></div></div></div><div class="eli-say"></div>';
     parent.append(el);
     [this.mv, this.sq, this.img, this.sh, this.bub] = ['.eli-mv', '.eli-sq', 'img', '.eli-sh', '.eli-say'].map(s => el.querySelector(s));
     this.setFace(face);

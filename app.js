@@ -46,7 +46,8 @@ const ME = { weekKm: 18.7, weekSec: 8460, weekElev: 142, week: [5.2, 0, 4.1, 3.1
 
 /* ── router ── */
 const SCREENS = [['welcome', 'หน้าต้อนรับ'], ['world', "Eli's World"], ['settings', 'ตั้งค่า'], ['trek', 'Step Trek'], ['trekdone', 'บันทึกกิจกรรม'], ['dream', 'Dream Land'], ['hall', 'Hero Hall'], ['treasury', 'Treasury'], ['redeem', 'แลกของรางวัล']];
-const TABS = [['world', "Eli's World"], ['trek', 'Step Trek'], ['dream', 'Dream Land'], ['hall', 'Hero Hall'], ['treasury', 'Treasury']];
+const TABS = [['world', "Eli's World"], ['dream', 'Dream Land'], ['trek', 'Step Trek'], ['hall', 'Hero Hall'], ['treasury', 'Treasury']];   // Step Trek = the big "play" button in the middle
+const TB_DEFAULT = 'D';
 const WITH_TABS = ['world', 'trek', 'dream', 'hall', 'treasury'];
 const ORDER = ['welcome', 'world', 'settings', 'trek', 'trekdone', 'dream', 'hall', 'treasury', 'redeem'];
 let cur = null, cleanup = [], curAct = FEED[0];
@@ -482,10 +483,15 @@ R.you = pg => {
 Object.assign(R, LIFE);
 
 /* ── boot ── */
-$('#tabbar').innerHTML = TABS.map(([k, l]) => {   // tab icons are cut straight from the approved mockup A (assets/t_*.png)
-  const n = { world: 't_planet0', trek: 't_mount', dream: 't_moon', hall: 't_trophy', treasury: 't_chest' }[k];
-  return `<button data-go="${k}"><span class="tb-i"><img class="mk" src="assets/${n}.png" alt=""></span><span class="tb-l">${l}</span></button>`;
-}).join('') + '<i class="bar"></i>';
+/* tab icons: set '0' = the flat icons cut from mockup A; 'A'/'B'/'C' = generated 3D sets (assets/tb_<set>_<tab>.png).
+   Pick with ?icons=A|B|C (remembered on this device). */
+const TBSET = (() => { const v = new URLSearchParams(location.search).get('icons'); return ['0', 'A', 'B', 'C', 'D'].includes(v) ? v : TB_DEFAULT; })();   // ?icons=… only for comparing sets; not remembered
+$('#tabbar').classList.add('set' + TBSET);
+$('#tabbar').innerHTML = TABS.map(([k, l]) => {
+  const n = TBSET === '0' ? 'assets/' + { world: 't_planet0', trek: 't_mount', dream: 't_moon', hall: 't_trophy', treasury: 't_chest' }[k] + '.png' : TBSET === 'D' ? `assets/hd_${k}.png` : `assets/tb_${TBSET}_${k}.png`;
+  return `<button data-go="${k}"${k === 'trek' ? ' class="play"' : ''}><span class="tb-i"><img class="mk" src="${n}" alt=""></span><span class="tb-l"${TBSET === 'D' ? ` data-fw="${{ world: 48.6, dream: 50, trek: 51, hall: 40.8, treasury: 36.6 }[k]}"` : ''}>${l}</span></button>`;
+}).join('') + '<i class="bar"></i>' + (TBSET === 'D' ? spk('left:0;top:1.9px;width:16.4px;height:16.4px', -35) + spk('left:214.5px;top:-4px;width:14px;height:15px', 40, 2) : '');
+if (TBSET === 'D') { hdFit($('#tabbar')); document.fonts?.ready.then(() => hdFit($('#tabbar'))); }
 bindGo($('#tabbar'));
 $('#jump').innerHTML = SCREENS.map(([k, l], i) => `<button data-go="${k}"><b>0${i + 1}</b><span>${l}</span></button>`).join('');
 bindGo($('#jump'));

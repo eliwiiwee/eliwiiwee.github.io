@@ -29,6 +29,50 @@
 #tabbar.dark button.on .tb-i{background:none}
 #tabbar.dark button.on .tb-i .mk{filter:brightness(0) invert(84%) sepia(52%) saturate(640%) hue-rotate(352deg)}
 #tabbar.dark button.on::after{content:"";position:absolute;left:50%;bottom:4px;width:24px;height:3px;margin-left:-12px;border-radius:2px;background:#F7D47A}
+/* Step Trek = the big "press to play" button in the middle of the bar */
+#tabbar button.play{flex:1.2;overflow:visible;z-index:2}
+#tabbar button.play::before,#tabbar button.play+button::before{display:none}
+#tabbar .play .tb-i{position:relative;width:64px;height:64px;margin-top:-42px;margin-bottom:9px;border-radius:50%;background:none;transition:transform .3s var(--spring)}
+#tabbar .play .tb-i .mk{width:64px;height:64px;filter:drop-shadow(0 6px 10px rgba(42,59,156,.35))}
+#tabbar .play .tb-i::after{content:"";position:absolute;inset:2px;border-radius:50%;border:2.5px solid rgba(242,193,78,.85);pointer-events:none;animation:tbPulse 2.2s ease-out infinite}
+@keyframes tbPulse{from{transform:scale(.92);opacity:.9}to{transform:scale(1.32);opacity:0}}
+#tabbar .play .tb-l{font-weight:700;color:var(--wi)}
+#tabbar button.play.on .tb-i{transform:translateY(-3px) scale(1.05)}
+#tabbar button.play.on .tb-i::after{animation:none;opacity:0}
+#tabbar button.play.on .tb-i .mk,#tabbar.dark .play .tb-i .mk{filter:drop-shadow(0 6px 10px rgba(42,59,156,.35))}
+#tabbar button.play:active .tb-i{transform:translateY(4px) scale(.93)}
+#tabbar.dark .play .tb-l{color:#F7D47A}
+#tabbar.dark button.play.on::after{display:none}
+/* set 0 (flat mockup icons): the play button is drawn in CSS around the mountain icon */
+#tabbar.set0 .play .tb-i{background:radial-gradient(circle at 50% 30%,#5068D8,#2A3B9C 55%,#1A2566);box-shadow:0 0 0 4px #F2C14E,0 0 0 7px #fff,0 6px 0 3px #18225E,0 10px 18px rgba(42,59,156,.35)}
+#tabbar.set0 button.play .tb-i .mk{width:34px;height:31px;filter:brightness(0) invert(1)}
+/* 3D icon sets: every tab is a real pressable button (a tile with depth); Step Trek = the big round play button */
+#tabbar.tabbar:is(.setA,.setB,.setC){height:68px;padding:0 6px;gap:5px;align-items:center;border-radius:24px;background:rgba(255,255,255,.92)}
+#tabbar:is(.setA,.setB,.setC) button{height:56px;padding:0;gap:0;justify-content:center;border-radius:16px;font:600 8.6px var(--f);color:#4B4743;
+  background:linear-gradient(180deg,#FFFFFF 0%,#F4EFE6 100%);box-shadow:0 4px 0 #DCCFBC,0 6px 10px rgba(60,45,30,.10),inset 0 1px 0 #fff;
+  transform:translateY(-2px);transition:transform .12s,box-shadow .12s,background .25s,color .25s}
+#tabbar:is(.setA,.setB,.setC) button::before{display:none}
+#tabbar:is(.setA,.setB,.setC) button:not(.play):active{transform:translateY(2px);box-shadow:0 0 0 #DCCFBC,0 1px 3px rgba(60,45,30,.12),inset 0 1px 0 #fff}
+#tabbar:is(.setA,.setB,.setC) .tb-i{width:36px;height:34px;margin:0;border-radius:0;background:none}
+#tabbar:is(.setA,.setB,.setC) .tb-i .mk{width:34px;height:34px;object-fit:contain;filter:none;transition:transform .3s var(--spring)}
+#tabbar:is(.setA,.setB,.setC) .tb-l{white-space:nowrap;line-height:1.1}
+#tabbar:is(.setA,.setB,.setC) button.on{color:#fff;background:linear-gradient(180deg,#4A5FCF 0%,#2A3B9C 100%);box-shadow:0 4px 0 #18225E,0 8px 14px rgba(42,59,156,.30),inset 0 1px 0 rgba(255,255,255,.35)}
+#tabbar:is(.setA,.setB,.setC) button.on .tb-i{background:none;transform:none}
+#tabbar:is(.setA,.setB,.setC) button.on .tb-i .mk{filter:drop-shadow(0 2px 2px rgba(10,15,50,.35));transform:scale(1.12) translateY(-1px)}
+#tabbar:is(.setA,.setB,.setC) button:not(.play).on::after{display:none}
+/* the play button: no tile, the round 3D button itself */
+#tabbar:is(.setA,.setB,.setC) button.play{flex:1.25;height:56px;background:none;box-shadow:none;transform:none;color:var(--wi);font-weight:700}
+#tabbar:is(.setA,.setB,.setC) .play .tb-i{width:80px;height:80px;margin-top:-44px;margin-bottom:0}
+#tabbar:is(.setA,.setB,.setC) .play .tb-i .mk{width:80px;height:80px;filter:drop-shadow(0 6px 10px rgba(42,59,156,.35))}
+#tabbar:is(.setA,.setB,.setC) button.play.on{background:none;box-shadow:none;color:var(--wi)}
+#tabbar:is(.setA,.setB,.setC) button.play.on .tb-i{transform:translateY(-3px) scale(1.05)}
+#tabbar:is(.setA,.setB,.setC) button.play.on .tb-i .mk{transform:none}
+#tabbar:is(.setA,.setB,.setC) button.play:active .tb-i{transform:translateY(4px) scale(.93)}
+/* Dream Land (dark bar): darker tiles */
+#tabbar.dark:is(.setA,.setB,.setC) button:not(.play){background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06));box-shadow:0 4px 0 rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.18);color:#E8E6F5}
+#tabbar.dark:is(.setA,.setB,.setC) button.on:not(.play){background:linear-gradient(180deg,#F7D47A,#E9B94E);box-shadow:0 4px 0 #A97B1E,inset 0 1px 0 rgba(255,255,255,.5);color:#2A2150}
+#tabbar.dark:is(.setA,.setB,.setC) .tb-i .mk{filter:none}
+#tabbar.dark:is(.setA,.setB,.setC) button.play,#tabbar.dark:is(.setA,.setB,.setC) button.play.on{background:none;box-shadow:none;color:#F7D47A}
 
 /* ═════════ Dream Land (nd_A) ═════════ */
 .pg.w-dream{background:#151A45}
@@ -58,7 +102,7 @@
 .dr-head b{margin-left:10px;font:700 19px var(--en);color:#fff;letter-spacing:-.01em}
 .dr-coin{position:absolute;left:288px;top:50px;width:79px;height:38px;z-index:10;display:flex;align-items:center;gap:8px;padding-left:7px;border-radius:19px;background:rgba(40,44,110,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset;color:#fff;font:700 15px var(--num)}
 .dr-coin .mk{width:28px;height:28px}
-.dr-panel{position:absolute;left:11px;width:368px;top:calc(var(--H,844px) - 239px);height:145px;z-index:10;border-radius:17px;padding:0;color:#fff;background:rgba(36,40,104,.5);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset,0 10px 30px rgba(0,0,0,.25)}
+.dr-panel{position:absolute;left:11px;width:368px;top:calc(var(--H,844px) - 266px);height:145px;z-index:10;border-radius:17px;padding:0;color:#fff;background:rgba(36,40,104,.5);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset,0 10px 30px rgba(0,0,0,.25)}
 .dr-panel>*{position:absolute}
 .dr-ttl{left:19px;top:12px;font:700 17.5px var(--en);letter-spacing:-.01em}
 .dr-q{right:19px;top:14px;font-size:9.5px;color:#E7E5F6;display:flex;align-items:baseline;gap:5px}
@@ -133,7 +177,7 @@
 .wh-sync{left:68px;top:calc(var(--H,844px) - 192px);width:255px;height:27px;border-radius:14px;display:flex;align-items:center;gap:8px;padding:0 9px 0 10px;font:600 8.7px var(--f);color:#1C2766;white-space:nowrap}
 .wh-sync .mk.l{width:17px;height:17px}.wh-sync .mk.c{width:5px;height:8px;margin-left:auto}
 .wh-sync.busy .mk.l{animation:spin 1s linear infinite}
-.wh-q{top:calc(var(--H,844px) - 159px);width:180px;height:57px;border-radius:18px;cursor:pointer}
+.wh-q{top:calc(var(--H,844px) - 184px);width:180px;height:57px;border-radius:18px;cursor:pointer}
 .wh-q.s1{left:12px}.wh-q.s2{left:197px}
 .wh-q .mk{position:absolute;left:9px;top:8px;width:41px;height:41px}
 .wh-q span{position:absolute;left:55px;top:7px;font:500 9.4px var(--en);color:var(--wi)}
@@ -158,3 +202,4 @@
 .wq-row em{font-style:normal;font-weight:700;font-size:12px;color:var(--wi)}
 .wq-row.ok{background:#E9ECFA}.wq-row.ok em::before{content:"✓ "}
 .wsheet-p{font-size:13.5px;line-height:1.65;color:var(--wink);margin:0 0 14px}
+#tabbar.tabbar.dark:not(.set0){background:rgba(28,30,82,.62)}

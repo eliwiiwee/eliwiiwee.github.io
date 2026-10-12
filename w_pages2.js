@@ -7,7 +7,7 @@ const TK_PATH = 'M158 396 C128 360 124 300 133 264 C140 250 200 256 218 249 C240
 LIFE.trek = pg => {   // theme-A Step Trek; the warm-up/countdown before a run is the earlier scene (readyScene)
   pg.classList.add('w-trek');
   Object.assign(RUN, { state: 'idle', sec: 0, m: 0, next: 500, sport: RUN.sport || 'วิ่ง' });
-  const H = appH, mh = Math.max(208, Math.min(250, H - 540)), stTop = H - 251, goTop = H - 163;
+  const H = appH, mh = Math.max(190, Math.min(250, H - 586)), stTop = H - 297, goTop = H - 209;   // clear of the raised Step Trek button in the tab bar
   pg.innerHTML = `
     <i class="wlogo tk-logo"></i><i class="tk-dv"></i>${wi('k_mount', 'tk-mt')}<b class="tk-ttl">Step Trek</b>
     <div class="tk-gps wait" id="tkGps">${wi('k_pin')}<span>หา GPS…</span></div>
@@ -196,7 +196,7 @@ const pimg = it => `assets/${it.img}.${it.ext || 'webp'}`;
 LIFE.treasury = pg => {
   pg.classList.add('w-tr');
   let tab = 'orig';
-  const H = appH, cartTop = H - 116;
+  const H = appH, cartTop = H - 166;   // above the raised Step Trek button
   pg.innerHTML = `<i class="wlogo tr-logo"></i><b class="tr-ttl">Treasury</b><span class="tr-sub">แลกของรางวัล เพื่อสุขภาพที่ดีกว่า</span>
     <div class="tr-coins coinchip2">${wi('w_coin')}<span><b data-coins>${wcoins()}</b> <small>coins</small></span></div>
     <img class="tr-hero" src="assets/tr_hero.webp" alt="">
@@ -288,5 +288,5 @@ LIFE.settings = pg => {
   $('#stPriv', pg).onclick = () => openSheet('<h4>ความเป็นส่วนตัว</h4><p class="wsheet-p">ข้อมูลก้าวเดินและการนอนใช้เพื่อคำนวณ Life Power และ Eli Bio-age เท่านั้น คุณเลือกซ่อนอันดับใน Hero Hall ได้ทุกเมื่อ</p><button class="btn btn-d press" data-close>ปิด</button>');
   $('#stHelp', pg).onclick = () => openSheet('<h4>ช่วยเหลือ</h4><p class="wsheet-p">ติดต่อทีม eli ได้ที่ LINE @eliofficial หรือ eliofficialth.store</p><button class="btn btn-d press" data-close>ปิด</button>');
   $('#stPf', pg).onclick = () => $('#whId') ? null : toast(`${G.citizen.name} · ${G.citizen.id}`);
-  $('#stOut', pg).onclick = () => { SFX.pop(); go('welcome'); };
+  $('#stOut', pg).onclick = () => { SFX.pop(); G.member = false; saveG(); go('welcome'); };   // logged out → the welcome pop-up asks again
 };

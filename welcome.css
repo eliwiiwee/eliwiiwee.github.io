@@ -1,0 +1,73 @@
+/* Eli's World — welcome intro (logo assembles on indigo → the cream world opens → words spring in → ELi bursts out) + join pop-up */
+.pg.w-wel{background:#1B2A7A;overflow:hidden;--px:0;--py:0}
+.wl-back{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 40%,#3448B8 0%,#2A3B9C 40%,#16215F 100%)}
+.wl-glow{position:absolute;left:50%;top:42%;width:420px;height:420px;margin:-210px;border-radius:50%;background:radial-gradient(closest-side,rgba(247,212,122,.35),transparent);animation:wlPulse 2.4s ease-in-out infinite}
+@keyframes wlPulse{50%{transform:scale(1.15);opacity:.7}}
+.wl-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(255,255,255,.6);animation:twk 2.2s ease-in-out infinite;animation-delay:var(--d)}
+.wl-stage{position:absolute;inset:0;clip-path:circle(0px at 50% 42%);background:var(--wcream)}
+.wl-stage .wbg{transform:translate(calc(var(--px) * -10px),calc(var(--py) * -8px)) scale(1.06)}
+/* sunburst behind ELi — quiet sand rays turning slowly */
+.wl-rays{position:absolute;width:560px;height:560px;margin:-280px;border-radius:50%;z-index:1;pointer-events:none;opacity:0;
+  background:repeating-conic-gradient(from 0deg,rgba(220,200,165,.38) 0 7deg,transparent 7deg 18deg);
+  -webkit-mask:radial-gradient(closest-side,#000 28%,transparent 72%);mask:radial-gradient(closest-side,#000 28%,transparent 72%);
+  animation:spin 38s linear infinite;transition:opacity 1.2s}
+.w-wel.portal .wl-rays{opacity:1}
+/* portal flash on the pedestal */
+.wl-portal{position:absolute;width:230px;height:52px;margin:-26px 0 0 -115px;border-radius:50%;z-index:2;pointer-events:none;opacity:0;
+  background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(123,149,244,.65) 45%,rgba(42,59,156,0) 100%)}
+.w-wel.portal .wl-portal{animation:wlPortal 1.2s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes wlPortal{0%{opacity:0;transform:scale(.2,.4)}25%{opacity:1;transform:scale(1.25,1.4)}100%{opacity:.35;transform:scale(1,1)}}
+.wl-stage .eli-m{z-index:4;transform-origin:50% 100%}
+.wl-hit{position:absolute;width:160px;height:190px;z-index:6;cursor:pointer}
+/* the logo pieces (original art, recoloured by mask) */
+.wl-logo{position:absolute;z-index:8;transform-origin:0 0;pointer-events:none}
+.wl-logo .lp{position:absolute;inset:0;background:#fff;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
+.wl-logo .u{-webkit-mask-image:url(assets/logo_u.png);mask-image:url(assets/logo_u.png)}
+.wl-logo .s{-webkit-mask-image:url(assets/logo_stem.png);mask-image:url(assets/logo_stem.png)}
+.wl-logo .d{-webkit-mask-image:url(assets/logo_dot.png);mask-image:url(assets/logo_dot.png)}
+.wl-ring{position:absolute;z-index:7;width:60px;height:60px;border-radius:50%;border:3px solid rgba(247,212,122,.9);opacity:0;pointer-events:none}
+/* the words */
+.wl-title{position:absolute;left:0;right:0;z-index:5;text-align:center;pointer-events:none;
+  transform:translate(calc(var(--px) * 6px),calc(var(--py) * 4px));transition:transform .6s cubic-bezier(.2,.7,.3,1)}
+.wl-title span{display:inline-block;opacity:0}
+.wl-title .sp{display:inline-block;width:.32em}
+.wl-title .t1{font:600 20px/1.2 var(--en);color:var(--wink);letter-spacing:.06em}
+.wl-title .t2{margin-top:2px;font:700 46px/1.1 var(--en);color:var(--wi);letter-spacing:-.02em}
+.w-wel.words .wl-title span{animation:wlLetter .7s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(var(--i) * 45ms)}
+.w-wel.words .t2 span{animation-delay:calc(220ms + var(--i) * 55ms)}
+@keyframes wlLetter{from{opacity:0;transform:translateY(30px) rotate(-14deg) scale(.5)}to{opacity:1;transform:none}}
+/* a light sweep across "eli's world" once the words are in */
+.wl-title .t2{position:relative;background:linear-gradient(100deg,var(--wi) 0 40%,#7B95F4 50%,var(--wi) 60% 100%);background-size:250% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text}
+.w-wel.ready .wl-title .t2 span{color:transparent;animation:none;opacity:1;transform:none}
+.w-wel.ready .wl-title .t2{animation:wlSweep 3.6s ease-in-out 1s infinite}
+@keyframes wlSweep{0%,60%{background-position:100% 0}100%{background-position:-50% 0}}
+/* floating motes */
+.wl-motes i{position:absolute;bottom:-12px;width:var(--s);height:var(--s);border-radius:50%;background:rgba(42,59,156,.25);z-index:3;animation:wlMote var(--t) linear infinite;animation-delay:var(--d);pointer-events:none}
+.wl-motes i:nth-child(3n){background:rgba(242,193,78,.5)}
+@keyframes wlMote{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(calc(var(--H,844px) * -1));opacity:0}}
+.wl-skip{position:absolute;right:16px;top:56px;z-index:9;height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.14);color:#fff;font:500 11px var(--f);transition:background .3s,color .3s}
+.w-wel.words .wl-skip{background:rgba(42,59,156,.08);color:var(--wi)}
+/* leaving for Eli's World: the world zooms toward you */
+.w-wel.leave .wl-stage{animation:wlLeave .65s cubic-bezier(.7,0,.3,1) forwards}
+.w-wel.leave .wl-logo{animation:wlFade .4s forwards}
+@keyframes wlLeave{to{transform:scale(1.25);filter:blur(4px);opacity:0}}
+@keyframes wlFade{to{opacity:0}}
+/* join pop-up */
+.wl-join{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;background:rgba(20,24,60,0);pointer-events:none;transition:background .4s}
+.wl-join.on{background:rgba(20,24,60,.28);pointer-events:auto}
+.wl-join .jc{position:relative;width:100%;padding:12px 22px 34px;border-radius:26px 26px 0 0;background:#fff;box-shadow:0 -10px 40px rgba(20,24,60,.2);transform:translateY(105%);transition:transform .55s cubic-bezier(.2,.9,.3,1.1)}
+.wl-join.on .jc{transform:none}
+.wl-join .grab{display:block;width:40px;height:4px;margin:0 auto 14px;border-radius:2px;background:#E2DCD3}
+.wl-join .v{display:none}
+.wl-join .v.on{display:block;animation:rise .4s var(--ease) both}
+.wl-join .h{display:block;font:700 20px/1.3 var(--f);color:var(--wink);margin-bottom:6px}
+.wl-join p{margin:0 0 16px;font:400 13px/1.55 var(--f);color:#5C5651}
+.jb{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;margin-top:10px;border-radius:24px;font:700 15px var(--f)}
+.jb.p{background:var(--wi);color:#fff;box-shadow:0 8px 20px rgba(42,59,156,.28)}
+.jb.s{background:#fff;color:var(--wi);box-shadow:0 0 0 1.5px #DCCFBE inset}
+.jb.a{background:#111;color:#fff}
+.jb.t{height:36px;color:var(--wi);font-weight:600}
+.jf{display:block;margin-top:10px}
+.jf span{display:block;font:600 11px var(--f);color:#5C5651;margin:0 0 4px 4px}
+.jf input{width:100%;height:44px;padding:0 14px;border:0;border-radius:14px;background:#F4F0EA;font:500 14px var(--f);color:var(--wink);outline:none;box-shadow:0 0 0 1.5px transparent inset;transition:box-shadow .2s}
+.jf input:focus{box-shadow:0 0 0 1.5px var(--wi) inset;background:#fff}

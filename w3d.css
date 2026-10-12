@@ -1,0 +1,37 @@
+/* Eli's World — 3D interactive layer (see w_3d.js) */
+.eli-3d{will-change:transform}
+/* 3D coin: coin art on both faces, a ring of gold strips for the rim */
+.c3{position:absolute;width:var(--cs);height:var(--cs);margin:calc(var(--cs) / -2) 0 0 calc(var(--cs) / -2);z-index:5;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.c3-b{position:absolute;inset:0;perspective:420px;animation:c3Bob 2.6s ease-in-out infinite;animation-delay:var(--bd,0s)}
+.c3-spin{position:absolute;inset:0;transform-style:preserve-3d;animation:c3Spin var(--sp,3.4s) linear infinite}
+.c3 .face{position:absolute;inset:0;background:url(assets/w_coin.png) center/contain no-repeat;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.c3 .face.f{transform:translateZ(var(--ct))}
+.c3 .face.b{transform:rotateY(180deg) translateZ(var(--ct))}
+.c3 .rim{position:absolute;left:50%;top:50%;background:linear-gradient(90deg,#C98912,#F2C14E 50%,#C98912)}
+.c3-sh{position:absolute;left:15%;width:70%;top:104%;height:16%;border-radius:50%;background:radial-gradient(closest-side,rgba(10,20,60,.32),transparent);animation:c3Sh 2.6s ease-in-out infinite;animation-delay:var(--bd,0s)}
+@keyframes c3Spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+@keyframes c3Bob{50%{transform:translateY(-9px)}}
+@keyframes c3Sh{50%{transform:scale(.7);opacity:.55}}
+.c3.got{pointer-events:none;animation:c3Got .5s cubic-bezier(.3,1.6,.6,1) forwards}
+@keyframes c3Got{40%{transform:translateY(-30px) scale(1.35)}to{transform:translateY(-46px) scale(.2);opacity:0}}
+.c3.pop{animation:c3Pop .45s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes c3Pop{from{transform:scale(0);opacity:0}}
+/* the brand mark as a solid block */
+.m3{position:absolute;z-index:8;cursor:pointer;perspective:520px;-webkit-tap-highlight-color:transparent}
+.m3-r{position:absolute;inset:0;transform-style:preserve-3d}
+.m3-r i{position:absolute;inset:0;background:var(--c);-webkit-mask:url(assets/logo_mark.png) center/contain no-repeat;mask:url(assets/logo_mark.png) center/contain no-repeat}
+.m3-r i.top{background:linear-gradient(155deg,#5068D8 0%,#2A3B9C 48%,#22317F 100%)}
+/* welcome: the solid mark takes over from the flat intro logo, the words get depth */
+.w-wel .m3{opacity:0;transition:opacity .25s}
+.w-wel.ready .m3{opacity:1}
+.w-wel.ready .wl-logo{opacity:0;transition:opacity .25s}
+.w-wel.ready .wl-title{transform:perspective(700px) rotateY(calc(var(--px) * 16deg)) rotateX(calc(var(--py) * -10deg)) translate(calc(var(--px) * 6px),calc(var(--py) * 4px));transition:none}
+.w-wel.ready .wl-title .t2{filter:drop-shadow(calc(var(--px) * -2px) 1px 0 #1A2566) drop-shadow(calc(var(--px) * -2px) 1px 0 #1A2566) drop-shadow(calc(var(--px) * -2px) 1px 0 #1A2566) drop-shadow(calc(var(--px) * -2px) 1px 0 #1A2566) drop-shadow(0 8px 10px rgba(26,37,102,.22))}
+.w-wel.ready .wl-title .t1{filter:drop-shadow(calc(var(--px) * -1px) 1px 0 #B9AE9E) drop-shadow(calc(var(--px) * -1px) 1px 0 #B9AE9E)}
+.w-wel .c3{z-index:3}
+.w-wel .c3.front{z-index:5}
+/* home: the park tilts with the phone; coins wait on the lawn */
+.w-world .wbg{transform-origin:50% 60%;will-change:transform}
+.w-world .c3{z-index:3}
+.w-world .c3.front{z-index:5}
+.w-wel.leave .m3,.w-wel.leave .c3{animation:wlFade .4s forwards}

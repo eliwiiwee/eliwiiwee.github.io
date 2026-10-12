@@ -1,0 +1,74 @@
+/* Eli's World — HUD D "sticker game" (client pick 2026-10-13, design gen/tab/hd_D_raw.png). Boxes are placed inline from mockup coordinates. */
+.w-world .hd-card,.w-world .hd-av,.w-world .hd-ic,.w-world .hd-t,.w-world .hd-bar,.w-world .hd-pill,.w-world .hd-dv,.w-world .hd-spk{position:absolute}
+.hd-card{z-index:5;padding:0;border-radius:999px;background:linear-gradient(180deg,#FFFFFF 0%,#FBFAF7 60%,#F4F2EE 100%);
+  box-shadow:0 0 0 1px rgba(226,222,214,.9),0 3px 0 rgba(214,208,198,.55),0 8px 16px rgba(35,50,25,.20);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--spring)}
+.hd-card:active{transform:translateY(1.5px) scale(.985)}
+.hd-gear{border-radius:15px;display:grid;place-items:center}
+.hd-gear img{width:70%;height:70%;object-fit:contain;transition:transform .6s var(--spring)}
+.hd-gear:active img{transform:rotate(90deg)}
+.hd-age{border-radius:17px}
+.hd-av{z-index:6;border-radius:50%;background:#fff;padding:3.6px;box-shadow:0 0 0 1px rgba(226,222,214,.9),0 6px 14px rgba(35,50,25,.22);pointer-events:none}
+.hd-av img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#F1ECE6}
+.hd-ic{z-index:6;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 2.5px rgba(20,30,20,.18))}
+.hd-spk{z-index:7;overflow:visible;pointer-events:none}
+.hd-t{z-index:7;display:flex;align-items:center;white-space:nowrap;line-height:1;pointer-events:none;font-family:var(--f)}
+.hd-t.nm{font-weight:800;color:#1B2357;font-family:"Noto Sans Thai",var(--f)}
+.hd-t.cid{font-weight:600;color:#717892;letter-spacing:.02em;-webkit-text-stroke:.02em currentColor}
+.hd-t.lv{font-weight:800;color:#2C4BC6}
+.hd-t.coin{font-weight:800;color:#1B2357}
+.hd-t.coin b{font-weight:inherit}
+.hd-dq .hd-t.dq{top:50%;transform:translateY(-50%);font-weight:800;color:#1E2A7E}
+.hd-dq .chev{position:absolute;left:131px;top:50%;width:6px;height:6px;margin-top:-3.5px;border:solid #2C4BC6;border-width:2.2px 2.2px 0 0;transform:rotate(45deg)}
+.hd-pill{z-index:6;border-radius:999px;pointer-events:none}
+.hd-pill.beige{background:#EEEAE4}
+.hd-pill.green{background:#E2F2DE}
+.hd-dv{z-index:6;background:#DDD8D1;pointer-events:none}
+.hd-t.agl{justify-content:center;font-weight:800;color:#1B2140}
+.hd-t.agl.bio{color:#2C4BC6}
+.hd-t.agn{justify-content:center;font-weight:800;color:#1B2140}
+.hd-t.agn small{font-size:.6em;margin-left:.22em;align-self:flex-end;margin-bottom:.08em}
+.hd-t.agn em{font-style:normal}
+.hd-t.agn.bio{color:#2C49C9}
+.hd-t.agn .tri{width:0;height:0;margin-left:.25em;border-left:.27em solid transparent;border-right:.27em solid transparent;border-top:.42em solid #36B44B;align-self:center}
+.hd-t.qh{font-weight:700;color:#2C4BC6}
+.hd-t.qn{font-weight:700;color:#1B2140;-webkit-text-stroke:.035em currentColor}
+.hd-t.qn b{font-weight:800;font-size:1.18em;margin-right:.25em}
+.hd-bar{z-index:7;border-radius:999px;background:#E3E0DB;overflow:hidden;pointer-events:none}
+.hd-bar>i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#2643C2,#3557D8);transition:width 1.2s var(--ease)}
+
+/* bottom tab bar — the cream tray with sticker tiles; Step Trek = the big yellow sticker button */
+#tabbar.setD.setD.setD{left:10.3px;right:auto;width:370.7px;bottom:13px;height:66.7px;padding:0;display:block;border:0;border-radius:17px;
+  background:linear-gradient(180deg,#F8F5EF,#EFEAE1);box-shadow:0 0 0 1.5px rgba(255,255,255,.85) inset,0 0 0 1px rgba(214,206,194,.8),0 8px 18px rgba(30,45,20,.25);backdrop-filter:none;-webkit-backdrop-filter:none}
+#tabbar.setD.setD.setD.hide{transform:translateY(150%)}
+#tabbar.setD.setD.setD button{position:absolute;display:block;padding:0;gap:0;flex:none;border-radius:12px;color:#1F2E8A;transform:none;
+  background:linear-gradient(180deg,#FFFFFF,#F7F5F1);box-shadow:0 0 0 1px rgba(226,221,212,.95),0 2.5px 4px rgba(60,50,30,.12);transition:transform .12s var(--spring),background .2s}
+#tabbar.setD.setD.setD button::before,#tabbar.setD.setD.setD button::after{display:none}
+#tabbar.setD.setD.setD button:active{transform:translateY(2px) scale(.96)}
+#tabbar.setD.setD.setD [data-go=world]{left:5.7px;top:3.8px;width:62.1px;height:58.3px}
+#tabbar.setD.setD.setD [data-go=dream]{left:74.3px;top:4.9px;width:64.8px;height:57.2px}
+#tabbar.setD.setD.setD [data-go=hall]{left:226.7px;top:5.6px;width:65.9px;height:56.4px}
+#tabbar.setD.setD.setD [data-go=treasury]{left:298.3px;top:4.9px;width:68.6px;height:57.2px}
+#tabbar.setD.setD.setD .tb-i{position:absolute;display:block;margin:0;border-radius:0;background:none;transform:none;width:auto;height:auto}
+#tabbar.setD.setD.setD .tb-i::after{display:none}
+#tabbar.setD.setD.setD .tb-i .mk{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1.5px 2px rgba(20,30,60,.18));transform:none}
+#tabbar.setD.setD.setD [data-go=world] .tb-i{left:5px;top:1px;width:52px;height:39px}
+#tabbar.setD.setD.setD [data-go=dream] .tb-i{left:8px;top:1px;width:49px;height:40px}
+#tabbar.setD.setD.setD [data-go=hall] .tb-i{left:11px;top:1.5px;width:44px;height:38px}
+#tabbar.setD.setD.setD [data-go=treasury] .tb-i{left:10px;top:1px;width:48px;height:39px}
+#tabbar.setD.setD.setD .tb-l{-webkit-text-stroke:.05em currentColor;position:absolute;left:0;right:0;top:41px;display:flex;justify-content:center;white-space:nowrap;line-height:1;font-weight:800;color:#1F2E8A;font-family:var(--f)}
+#tabbar.setD.setD.setD button.on:not(.play){background:linear-gradient(180deg,#3A5BDA,#2341BC);box-shadow:0 0 0 1px #1E37A6,0 3px 0 #1A2F92,0 4px 8px rgba(30,50,150,.3)}
+#tabbar.setD.setD.setD button.on:not(.play) .tb-l{color:#fff}
+#tabbar.setD.setD.setD button.play{left:147.8px;top:-17.2px;width:68.6px;height:81.6px;background:none;box-shadow:none;overflow:visible;z-index:2}
+#tabbar.setD.setD.setD .play .tb-i{left:-3px;top:-3px;width:75px;height:75px}
+#tabbar.setD.setD.setD .play .tb-i .mk{filter:drop-shadow(0 4px 6px rgba(150,110,0,.30))}
+#tabbar.setD.setD.setD .play .tb-l{left:2.9px;right:auto;width:62.9px;top:62px;height:15.2px;align-items:center;border-radius:8px;background:#fff;color:#1E2A7E;box-shadow:0 0 0 1px rgba(226,221,212,.95),0 2px 4px rgba(60,50,30,.15)}
+#tabbar.setD.setD.setD button.play:active .tb-i{transform:translateY(2px) scale(.95)}
+#tabbar.setD.setD.setD button.play.on .tb-i{transform:scale(1.04)}
+#tabbar.setD .hd-spk{position:absolute;z-index:3;overflow:visible;pointer-events:none}
+/* the little gold twinkle beside the trophy (as in the mockup) */
+#tabbar.setD.setD.setD [data-go=hall] .tb-i::after{content:"";display:block;position:absolute;inset:auto;left:41px;top:12px;width:9.5px;height:10px;border:0;animation:none;opacity:1;transform:none;
+  background:#F6C343;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 1px #fff)}
+/* Comfortaa tops out at 700 — the mockup's Latin type is heavier, so the Latin words get a hair of stroke (Thai uses Noto Sans Thai 800 as is) */
+.hd-t.lv,.hd-t.coin,.hd-dq .hd-t.dq,.hd-t.agl.bio,.hd-t.qh,.hd-t.agn em,.hd-t.agn,.hd-t.qn b{-webkit-text-stroke:.045em currentColor}
+.hd-t.agn small,.hd-t.qn{-webkit-text-stroke:0}
+.hd-t.qn b{-webkit-text-stroke:.045em currentColor}

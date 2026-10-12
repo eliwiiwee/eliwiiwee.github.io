@@ -1,7 +1,7 @@
 /* Eli's World — welcome + home (design/nw_A.png, nh_A.png). ELi = original art only, moved by code. */
 
 /* map a point of a 1024×1536 cover-scaled background to page coordinates */
-const coverPt = (rx, ry) => { const k = Math.max(390 / 1024, appH / 1536); return [rx * k + (390 - 1024 * k) / 2, ry * k + (appH - 1536 * k) / 2, k]; };
+const coverPt = (rx, ry) => { const k = Math.max(appW / 1024, appH / 1536); return [rx * k + (appW - 1024 * k) / 2 - (appW - 390) / 2, ry * k + (appH - 1536 * k) / 2, k]; };   // in the centred 390-pt column
 const w8 = ms => new Promise(r => later(ms, r));
 
 /* ═════════ Welcome (nw_A) ═════════ */
@@ -95,6 +95,8 @@ LIFE.world = pg => {
     <i class="hd-bar q" style="${ab(677, 1247, 935, 1267)}"><i data-w="${Math.min(100, t.sleep / 7 * 100)}"></i></i>
     ${spk(ab(922, 1206, 968, 1250), 60, 2)}`;
   hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));
+  // full-screen mode: the top HUD hugs the screen corners (left group → left edge, right group → right edge)
+  [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg')) el.classList.add(el.offsetLeft < 195 ? 'hl' : 'hr'); });
   bindGo(pg);
   later(250, () => $$('[data-w]', pg).forEach(i => i.style.width = i.dataset.w + '%'));
   // ELi lives on the lawn; mood/pose follows the Bio-age (younger = bouncy, older = tired)

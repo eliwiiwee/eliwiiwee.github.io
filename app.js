@@ -65,6 +65,7 @@ function go(name, opt = {}) {
   view.append(pg);
   cur = name;
   R[name](pg, opt);
+  colTag(pg, pg);
   $('#tabbar').classList.toggle('hide', !WITH_TABS.includes(name));
   const ti = TABS.findIndex(t => t[0] === name);
   $$('#tabbar button').forEach((b, i) => b.classList.toggle('on', i === ti));
@@ -495,32 +496,63 @@ if (TBSET === 'D') { hdFit($('#tabbar')); document.fonts?.ready.then(() => hdFit
 bindGo($('#tabbar'));
 $('#jump').innerHTML = SCREENS.map(([k, l], i) => `<button data-go="${k}"><b>0${i + 1}</b><span>${l}</span></button>`).join('');
 bindGo($('#jump'));
-/* Responsive: the UI is designed on a 390-pt-wide canvas. On phones the whole app is scaled to the screen width (k = vw/390) and its
-   height becomes vh/k design points (≈694 on iPhone SE … ≈870 on tall Androids); screens lay out against that height.
-   On desktop the 390×844 phone frame is scaled to fit the window. */
-let appH = 844;
+/* Responsive: the UI is designed on a 390-pt-wide canvas.
+   · phones (≤520 px wide): the whole app is scaled to the screen width (k = vw/390); its height becomes vh/k design points.
+   · tablets / desktops / phones in landscape: FULL SCREEN — the app fills the window. k = min(vw/390, vh/720); the canvas
+     becomes vw/k × vh/k points. Backgrounds are full-bleed, page content sits in a centred 390-pt column (CSS var --ex =
+     the side margin), and the home HUD hugs the screen edges like a game HUD.
+   · ?frame=1 keeps the old presentation (phone frame + screen list) for design reviews. */
+/* full-screen mode: which page elements belong to the centred 390-pt design column?
+   An element laid out inside x = 0…390 of the design (px-positioned) gets .col (shifted by --ex); anything wider —
+   full-bleed backgrounds, left/right:0 bars, left:50% centred boxes, right-anchored chips — already sits right on the
+   wide canvas, so it stays and its absolutely-positioned children are checked in turn. Flow content inside those is left alone. */
+function colTag(box, pg) {
+  for (const el of box.children) {
+    if (el.classList.contains('col') || el.classList.contains('hl') || el.classList.contains('hr')) continue;
+    const abs = /absolute|fixed/.test(getComputedStyle(el).position);
+    if (!abs && box !== pg) continue;
+    const pr = pg.getBoundingClientRect(), k = pr.width / pg.offsetWidth || 1, er = el.getBoundingClientRect();
+    const l = (er.left - pr.left) / k, r = l + el.offsetWidth;   // where it sits on the page, in design points
+    if (l >= -6 && r <= 396) el.classList.add('col');
+    else if (abs) colTag(el, pg);
+  }
+}
+new MutationObserver(ms => {   // ELi, particles, coins … added later go through the same check
+  if (appW <= 392) return;
+  for (const m of ms) {
+    const box = m.target, pg = box.closest && box.closest('.pg');
+    if (!pg || box.closest('.col')) continue;
+    if (box === pg || /absolute|fixed/.test(getComputedStyle(box).position)) colTag(box, pg);
+  }
+}).observe($('#view'), { childList: true, subtree: true });
+let appH = 844, appW = 390;
+const FRAME = new URLSearchParams(location.search).has('frame');
 function fit() {
   const w = $('#wrap'), app = $('#app');
-  const mob = innerWidth <= 520;
-  document.body.classList.toggle('mob', mob);   // real phone: the app is the screen, so the mock 9:41 status bar is hidden
-  if (mob) {
+  const mob = innerWidth <= 520, full = !mob && !FRAME;
+  document.body.classList.toggle('mob', mob || full);   // the app is the screen: the mock 9:41 status bar is hidden
+  document.body.classList.toggle('full', full);
+  if (mob || full) {
     w.style.transform = '';
     // a host page may pad the root by the phone's safe-area insets (claude.ai artifacts do): fit inside that padding
     const rs = getComputedStyle(document.documentElement), pad = (parseFloat(rs.paddingTop) || 0) + (parseFloat(rs.paddingBottom) || 0);
-    const k = innerWidth / 390, H = Math.round((innerHeight - pad) / k);
-    Object.assign(app.style, { width: '390px', height: H + 'px', transform: `scale(${k})`, transformOrigin: '0 0' });
-    setH(H);
+    const vh = innerHeight - pad, k = mob ? innerWidth / 390 : Math.min(innerWidth / 390, vh / 720);
+    const W = mob ? 390 : Math.round(innerWidth / k), H = Math.round(vh / k);
+    Object.assign(app.style, { width: W + 'px', height: H + 'px', transform: `scale(${k})`, transformOrigin: '0 0' });
+    setH(H, W);
   } else {
     app.style.cssText = '';
     w.style.transform = `scale(${Math.min(1, (innerHeight - 24) / 868, (innerWidth - 32) / 414)})`;
-    setH(844);
+    setH(844, 390);
   }
 }
-function setH(H) {
-  const app = $('#app'), changed = Math.abs(H - appH) > 4;
-  appH = H; app.style.setProperty('--H', H + 'px');
+function setH(H, W = 390) {
+  const app = $('#app'), changed = Math.abs(H - appH) > 4 || Math.abs(W - appW) > 4;
+  appH = H; appW = W;
+  app.style.setProperty('--H', H + 'px'); app.style.setProperty('--W', W + 'px'); app.style.setProperty('--ex', (W - 390) / 2 + 'px');
   app.classList.toggle('short', H < 760);
-  if (changed && cur) go(cur, { force: true, dir: 'none' });   // screens that place things by height re-render
+  app.classList.toggle('wide', W > 430);
+  if (changed && cur) go(cur, { force: true, dir: 'none' });   // screens that place things by size re-render
 }
 addEventListener('resize', fit); fit();
 const start = location.hash.slice(1);

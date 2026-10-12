@@ -1,0 +1,15 @@
+/* Full-screen mode (tablets, desktops, landscape phones — see fit() and colTag() in app.js).
+   The canvas is wider than 390 pt: full-bleed things stay, the 390-pt design column is shifted to the centre with the
+   `translate` property (it adds to any transform an element already animates). */
+body.full .stage{display:block;height:100%;padding:0}
+body.full .side{display:none}
+body.full .phone-wrap,body.full .phone{width:100%;height:100%;padding:0;border-radius:0;box-shadow:none;background:none;transform:none!important}
+body.full #app{border-radius:0}
+body.full .home-ind{display:none}
+#app{--ex:0px;--W:390px}
+.col{translate:var(--ex) 0}
+.pg .hl.hl{translate:clamp(0px, var(--ex), 12px) 0}                              /* home HUD pinned to the left edge of the screen */
+.pg .hr.hr{translate:calc(var(--ex) * 2 - clamp(0px, var(--ex), 12px)) 0}        /* … and to the right edge */
+#tabbar{translate:var(--ex) 0}
+#app .sheet,.wl-join .jc{max-width:430px;margin-left:auto;margin-right:auto}
+#app.wide .wl-join .jc{border-radius:26px 26px 0 0}

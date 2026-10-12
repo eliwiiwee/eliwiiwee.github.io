@@ -159,7 +159,7 @@
 .tr-tabs.fr .ind{transform:translateX(100%)}
 .tr-tabs button{flex:1;position:relative;z-index:1;font:600 12.5px var(--en);color:var(--wink);transition:color .3s}
 .tr-tabs button.on{color:#fff}
-.tr-grid{position:absolute;left:0;right:0;top:240px;padding:0 15px 20px 18px;display:grid;grid-template-columns:173px 173px;grid-auto-rows:132px;align-content:start;gap:6px 7px;overflow-y:auto;scrollbar-width:none}
+.tr-grid{position:absolute;left:0;right:0;top:240px;padding:0 15px 20px 18px;display:grid;grid-template-columns:173px 173px;justify-content:center;grid-auto-rows:132px;align-content:start;gap:6px 7px;overflow-y:auto;scrollbar-width:none}
 .tr-grid::-webkit-scrollbar{display:none}
 .tr-card{position:relative;height:132px;border-radius:15px;background:#fff;box-shadow:var(--wsh);overflow:hidden;animation:rise .5s var(--ease) both}
 .tr-card .pi{position:absolute;left:0;right:0;top:4px;height:84px;display:grid;place-items:center}

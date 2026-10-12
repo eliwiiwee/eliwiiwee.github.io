@@ -46,7 +46,8 @@ LIFE.welcome = pg => {
     await w8(520); if (skip) return;
     // 2 · the cream world opens out of the logo, the logo flies up to its place and turns indigo
     later(450, () => $('#sbar').classList.remove('light'));
-    A(stage, [{ clipPath: `circle(0px at ${cx}px ${cy}px)` }, { clipPath: `circle(${appH * 1.2}px at ${cx}px ${cy}px)` }], { duration: 900, easing: 'cubic-bezier(.7,0,.2,1)' });
+    const sx0 = cx + (appW - 390) / 2;   // the stage is full-bleed; the logo sits in the centred column
+    A(stage, [{ clipPath: `circle(0px at ${sx0}px ${cy}px)` }, { clipPath: `circle(${Math.hypot(appW, appH)}px at ${sx0}px ${cy}px)` }], { duration: 900, easing: 'cubic-bezier(.7,0,.2,1)' });
     const sx = LW / BW, tx = lx - LW / 2 - (cx - BW / 2), ty = ly - (cy - BH / 2);
     A(logo, [{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${tx}px,${ty}px) scale(${sx})` }], { duration: 900, easing: 'cubic-bezier(.7,0,.2,1)' });
     [pu, ps, pd].forEach(p => A(p, [{ background: '#fff' }, { background: '#2A3B9C' }], { duration: 500, delay: 380, easing: 'linear' }));

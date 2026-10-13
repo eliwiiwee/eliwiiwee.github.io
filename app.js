@@ -554,6 +554,18 @@ function setH(H, W = 390) {
   app.classList.toggle('wide', W > 430);
   if (changed && cur) go(cur, { force: true, dir: 'none' });   // screens that place things by size re-render
 }
+/* Auto-update: GitHub Pages lets browsers keep index.html for up to 10 min and in-app browsers (LINE, Facebook) even longer.
+   On open and whenever the tab comes back, ask version.json (never cached) — if a newer build is live, reload into it. */
+const checkBuild = () => {
+  if (!window.BUILD || location.protocol === 'file:') return;
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !j.v || j.v === window.BUILD) return;
+    const q = new URLSearchParams(location.search); if (q.get('b') === j.v) return;   // already tried this build — never loop
+    q.set('b', j.v); location.replace(location.pathname + '?' + q + location.hash);
+  }).catch(() => {});
+};
+checkBuild();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkBuild(); });
 addEventListener('resize', fit); fit();
 const start = location.hash.slice(1);
 const AWQ = new URLSearchParams(location.search).get('away');   // preview the come-back notification

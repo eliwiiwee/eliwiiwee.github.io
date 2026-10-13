@@ -197,11 +197,12 @@ LIFE.treasury = pg => {
   pg.classList.add('w-tr');
   let tab = 'orig';
   const H = appH, cartTop = H - 166;   // above the raised Step Trek button
+  const banH = Math.round(Math.max(92, Math.min(150, (H - 560) * .55 + 92))), gridTop = 90 + banH + 44;   // shorter banner on short phones
   pg.innerHTML = `<i class="wlogo tr-logo"></i><b class="tr-ttl">Treasury</b><span class="tr-sub">แลกของรางวัล เพื่อสุขภาพที่ดีกว่า</span>
     <div class="tr-coins coinchip2">${wi('w_coin')}<span><b data-coins>${wcoins()}</b> <small>coins</small></span></div>
-    <div class="tr-ban"><img src="assets/tr_banner.webp" alt=""><div class="tx"><b>ก้าวเล็ก ๆ<br>แลกรางวัลใหญ่</b><span>สะสมเหรียญจากการเดินและการนอน</span></div></div>
-    <div class="tr-tabs" id="trTabs"><i class="ind"></i><button class="on" data-t="orig">Eli Originals</button><button data-t="fr">Eli friends</button></div>
-    <div class="tr-grid" id="trGrid" style="height:${cartTop - 304}px"></div>
+    <div class="tr-ban ${banH < 124 ? "sm" : ""}" style="height:${banH}px"><img src="assets/tr_banner.webp" alt=""><div class="tx"><b>ก้าวเล็ก ๆ<br>แลกรางวัลใหญ่</b><span>สะสมเหรียญจากการเดินและการนอน</span></div></div>
+    <div class="tr-tabs" id="trTabs" style="--tt:${90 + banH + 10}px"><i class="ind"></i><button class="on" data-t="orig">Eli Originals</button><button data-t="fr">Eli friends</button></div>
+    <div class="tr-grid" id="trGrid" style="top:${gridTop}px;height:${cartTop - 18 - gridTop}px"></div>
     <div class="tr-cart2" id="trBar" style="top:${cartTop - 12}px">
       <span class="ci">${wi('tr_cartbar')}<b id="trN">0</b></span>
       <span class="tx"><span id="trTxt">ตะกร้า</span><b><i id="trSum">0</i> <small>coins</small></b></span>

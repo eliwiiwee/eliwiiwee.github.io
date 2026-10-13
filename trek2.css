@@ -46,17 +46,17 @@
 .t2-rec.paused .t2-top .dot{background:#F6C343;box-shadow:0 0 0 4px rgba(246,195,67,.25)}
 .t2-top b{margin-left:auto;display:flex;align-items:center;gap:4px;height:26px;padding:0 10px;border-radius:13px;background:#E2F5E3;color:#1E7A33;font:700 11.5px var(--f)}
 .t2-top b svg{width:13px;height:13px}
-.t2-km{position:absolute;left:0;right:0;top:calc(var(--H) * .14);text-align:center}
-.t2-km b{display:block;font:700 96px/1 var(--num);color:var(--wi);letter-spacing:-.02em;-webkit-text-stroke:.03em currentColor;transition:opacity .3s}
+.t2-km{position:absolute;left:0;right:0;top:max(88px, calc(var(--H) * .11));text-align:center}
+.t2-km b{display:block;font:700 min(96px, calc(var(--H) * .125))/1 var(--num);color:var(--wi);letter-spacing:-.02em;-webkit-text-stroke:.03em currentColor;transition:opacity .3s}
 .t2-km span{display:block;margin-top:6px;font:700 15px var(--f);color:#6E6A66}
 .t2-rec.paused .t2-km b{opacity:.45}
 .t2-rec.paused .t2-km span::after{content:" · หยุดชั่วคราว";color:#E09A00}
-.t2-two{position:absolute;left:24px;right:24px;top:calc(var(--H) * .36);display:flex;align-items:center;height:76px;border-radius:22px;background:#fff;box-shadow:0 0 0 1px rgba(226,221,212,.9),0 6px 16px rgba(40,40,30,.10)}
+.t2-two{position:absolute;left:24px;right:24px;top:max(198px, calc(var(--H) * .3));display:flex;align-items:center;height:76px;border-radius:22px;background:#fff;box-shadow:0 0 0 1px rgba(226,221,212,.9),0 6px 16px rgba(40,40,30,.10)}
 .t2-two div{flex:1;text-align:center}
 .t2-two i{width:1px;height:42px;background:#E6E1DA}
 .t2-two b{display:block;font:700 28px/1.1 var(--num);color:#1B2357}
 .t2-two span{display:block;margin-top:2px;font:600 11px var(--f);color:#7A746E}
-.t2-lane{position:absolute;left:30px;right:30px;top:calc(var(--H) * .64 + 2px);height:6px}
+.t2-lane{position:absolute;left:30px;right:30px;top:calc(var(--ly, 540px) + 2px);height:6px}
 .t2-lane .ln{position:absolute;inset:0;border-radius:3px;background:repeating-linear-gradient(90deg,#D9CFBF 0 14px,transparent 14px 26px);animation:t2Lane .6s linear infinite}
 .t2-rec.paused .t2-lane .ln{animation:none}
 @keyframes t2Lane{to{background-position:-26px 0}}

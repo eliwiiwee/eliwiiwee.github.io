@@ -103,16 +103,17 @@ LIFE.world = pg => {
   const mood = bio <= age - 2 ? 'fit' : bio >= age + 2 ? 'tired' : 'ok';
   const [cx, cy] = coverPt(520, 900);
   const top = 175, bottom = appH - 200;          // free band between the top HUD and the Daily Quest panel
-  const fy = Math.max(top + 150, Math.min(bottom, cy));
+  const esz = Math.round(Math.max(100, Math.min(158, (bottom - top) * .74)));   // short phones (browser bars showing) → a smaller ELi
+  const fy = Math.max(top + esz, Math.min(bottom, cy));
   pg.insertAdjacentHTML('beforeend', `<i class="wh-glow" style="left:${cx}px;top:${fy}px"></i>`);
-  const eli = new Eli(pg, { size: 158, x: cx, y: fy });
+  const eli = new Eli(pg, { size: esz, x: cx, y: fy });
   const rest = mood === 'tired' ? 'sick' : 'ready1';
   eli.pose(rest);
   const glow = $('.wh-glow', pg);
   let busy = false, petting = false;
   const wander = async () => {
     if (busy || petting || cur !== 'world') return; busy = true;
-    const nx = Math.max(90, Math.min(300, cx + (Math.random() - .5) * 170)), ny = Math.max(top + 150, Math.min(bottom, fy + (Math.random() - .5) * 60));
+    const nx = Math.max(90, Math.min(300, cx + (Math.random() - .5) * 170)), ny = Math.max(top + esz, Math.min(bottom, fy + (Math.random() - .5) * 60));
     eli.setFace(nx < eli.x ? -1 : 1);
     if (mood !== 'tired') eli.loop(RUNF, mood === 'fit' ? 12 : 9);
     glow.style.transition = 'left 1.6s ease-in-out, top 1.6s ease-in-out'; glow.style.left = nx + 'px'; glow.style.top = ny + 'px';

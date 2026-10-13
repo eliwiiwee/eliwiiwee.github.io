@@ -5,12 +5,14 @@ LIFE.hall = pg => {
   let mode = 'week';
   const heart = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.4 2.9 4.5 6.6 4.2c2.1-.2 3.9 1 5.4 2.9 1.5-1.9 3.3-3.1 5.4-2.9 3.7.3 5.7 4.2 4.2 7.5C19.5 16.4 12 21 12 21z"/></svg>';
   const conf = Array.from({ length: 18 }, (_, k) => `<i class="cf" style="left:${(k * 47) % 100}%;top:${(k * 29) % 34}%;--r:${(k * 37) % 180}deg;--c:${['#F6C343', '#F28C28', '#7B95F4', '#FF8FB1', '#5BD1C9'][k % 5]};animation-delay:${(k % 6) * .5}s"></i>`).join('');
+  const s = Math.max(.6, Math.min(1, (appH - 96 - 300) / 372)), listTop = Math.round(372 * s);
   pg.innerHTML = `<div class="h2-bg">${conf}</div>
+    <div class="h2-top" style="transform:scale(${s.toFixed(3)})">
     <div class="h2-head"><span class="lg"><i class="wlogo"></i></span><b>Hero Hall</b><img src="assets/hd_hall.png" alt=""></div>
     ${spk('left:300px;top:52px;width:22px;height:22px', 30, 2)}
     <div class="h2-seg" id="hhSeg"><i class="ind"></i><button class="on" data-m="week">สัปดาห์นี้</button><button data-m="all">ตลอดกาล</button></div>
-    <section class="h2-pod" id="hhTop"></section>
-    <section class="h2-list"><div class="h2-lh"><i class="bars"><i></i><i></i><i></i></i><b>อันดับ Life Power</b></div><div class="h2-rows" id="hhRows"></div></section>`;
+    <section class="h2-pod" id="hhTop"></section></div>
+    <section class="h2-list" style="top:${listTop}px"><div class="h2-lh"><i class="bars"><i></i><i></i><i></i></i><b>อันดับ Life Power</b></div><div class="h2-rows" id="hhRows"></div></section>`;
   const draw = () => {
     const d = HH[mode], mx = d.top[0][1];
     $('#hhTop', pg).innerHTML = `<i class="rays"></i>${[[2, 1], [1, 0], [3, 2]].map(([n, i]) => `

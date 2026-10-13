@@ -163,14 +163,24 @@ LIFE.welcome = pg => {
   const title = $('.wl-title', pg), tTop = title.offsetTop;
   const lift = () => {
     const on = join.classList.contains('on'), jt = on ? appH - $('.jc', join).offsetHeight : appH;
-    const d = on ? Math.max(0, py - (jt - 26)) : 0;   // keep the rim of the podium in sight
-    stage.style.transform = d ? `translateY(${-d}px)` : '';
-    title.style.top = (tTop + d) + 'px';   // (layout move, not a transform: a transform would break the gradient text)
-    // ELi shrinks a little if it would touch the title; on very short screens the title steps aside (the pop-up names the app anyway)
-    let room = py - d - (tTop + title.offsetHeight + 14), hide = d && room / 206 < .7;
-    if (hide) room = py - d - (ly + LH + 12);
-    title.style.opacity = hide ? '0' : '';
-    eli.el.style.scale = d ? String(Math.max(.5, Math.min(1, room / 206))) : '';
+    // reset
+    stage.style.transform = ''; title.style.top = tTop + 'px'; title.style.zoom = ''; m3.style.transform = '';
+    eli.el.style.scale = ''; eli.el.style.translate = ''; pg.classList.remove('squeeze');
+    if (!on) return;
+    // 1 · roomy screens: the world slides up so ELi stands just above the pop-up, the podium rim still in sight
+    const d = Math.max(0, py - (jt - 26)), room = py - d - (tTop + title.offsetHeight + 14);
+    if (room / 206 >= .7) {
+      stage.style.transform = d ? `translateY(${-d}px)` : '';
+      title.style.top = (tTop + d) + 'px';   // (a layout move, not a transform: a transform would break the gradient text)
+      eli.el.style.scale = String(Math.min(1, room / 206));
+      return;
+    }
+    // 2 · short screens (browser bars showing): logo, title and ELi shrink together toward the top so all three stay visible
+    const k = Math.max(.42, (jt - 18) / py);
+    title.style.zoom = k.toFixed(3);
+    m3.style.transformOrigin = `${195 - parseFloat(m3.style.left)}px ${-parseFloat(m3.style.top)}px`; m3.style.transform = `scale(${k.toFixed(3)})`;
+    eli.el.style.translate = `0 ${(py * k - py).toFixed(1)}px`; eli.el.style.scale = k.toFixed(3);
+    pg.classList.add('squeeze');
   };
   const view = v => { $$('.v', join).forEach(x => x.classList.toggle('on', x.classList.contains('v' + v))); if (v) setTimeout(() => $(`.v${v} input`, join)?.focus(), 350); later(30, lift); };
   const openJoin = () => { join.classList.add('on'); SFX.pop(); lift(); };

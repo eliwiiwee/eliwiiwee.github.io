@@ -102,3 +102,6 @@
 .wl-join .v0 .jb.so{height:44px;margin-top:8px;font-size:14px}
 .wl-join .v0 .h{font-size:18px;margin-bottom:6px}
 .wl-join .jc{padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+/* short screens: while the pop-up is open the coins and rays step aside */
+.w-wel.squeeze .c3,.w-wel.squeeze .wl-rays,.w-wel.squeeze .wl-portal{opacity:0!important;transition:opacity .3s}
+.w-wel .wl-stage .eli-m{transition:scale .55s cubic-bezier(.2,.9,.3,1),translate .55s cubic-bezier(.2,.9,.3,1)}

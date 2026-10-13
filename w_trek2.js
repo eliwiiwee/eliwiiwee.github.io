@@ -112,8 +112,10 @@ LIFE.trek = pg => {
       </div>
       <div class="t2-kmtoast" id="t2Lap"></div>`;
     pg.append(rec); later(20, () => rec.classList.add('on'));
-    const ly = Math.round(appH * .64);
-    const re = new Eli(rec, { size: 118, x: 195, y: ly }); re.setFace(1); re.loop(RUNF, 13);
+    // ELi runs in the gap between the numbers card and the pause button, whatever the screen height
+    const twoB = Math.max(198, Math.round(appH * .3)) + 76, ly = appH - 176, esz = Math.max(70, Math.min(118, ly - twoB - 8));
+    rec.style.setProperty('--ly', ly + 'px');
+    const re = new Eli(rec, { size: esz, x: 195, y: ly }); re.setFace(1); re.loop(RUNF, 13);
     clearInterval(dust); dust = setInterval(() => RUN.state === 'running' && puff(rec, re.x - 30, re.y - 3, 1), 320);
     cleanup.push(() => clearInterval(dust));
     RUN.state = 'running'; RUN.eli = re;
@@ -130,7 +132,7 @@ LIFE.trek = pg => {
     t.innerHTML = `<b>ครบ ${km} กม.!</b><span>${clock(RUN.sec)} · ${spd.toFixed(1)} กม./ชม. · ♥ ${hr}</span>`;
     t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
     [0, .14, .28].forEach((d, i) => SFX.tone([784, 988, 1318][i], .22, 'sine', .05, d)); buzz([30, 40, 30]);
-    burst(rec, 195, appH * .64 - 90, { n: 14, dist: 70, size: 6, colors: ['#F6C343', '#F28C28', '#2A3B9C', '#fff'], shape: 'star' });
+    burst(rec, 195, appH - 230, { n: 14, dist: 70, size: 6, colors: ['#F6C343', '#F28C28', '#2A3B9C', '#fff'], shape: 'star' });
     RUN.eli && (RUN.eli.pose('cheer1'), RUN.eli.jump(40, 460).then(() => RUN.state === 'running' && RUN.eli.loop(RUNF, 13)));
     later(500, () => T2.say(`ระยะทาง ${km} กิโลเมตร. เวลา ${T2.thTime(RUN.sec)}. ความเร็วเฉลี่ย ${spd.toFixed(1)} กิโลเมตรต่อชั่วโมง. อัตราการเต้นของหัวใจเฉลี่ย ${hr} ครั้งต่อนาที`));
     RUN.next += 1000;

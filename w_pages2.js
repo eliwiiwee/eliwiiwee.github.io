@@ -199,14 +199,23 @@ LIFE.treasury = pg => {
   const H = appH, cartTop = H - 166;   // above the raised Step Trek button
   pg.innerHTML = `<i class="wlogo tr-logo"></i><b class="tr-ttl">Treasury</b><span class="tr-sub">แลกของรางวัล เพื่อสุขภาพที่ดีกว่า</span>
     <div class="tr-coins coinchip2">${wi('w_coin')}<span><b data-coins>${wcoins()}</b> <small>coins</small></span></div>
-    <img class="tr-hero" src="assets/tr_hero.webp" alt="">
+    <div class="tr-ban"><img src="assets/tr_banner.webp" alt=""><div class="tx"><b>ก้าวเล็ก ๆ<br>แลกรางวัลใหญ่</b><span>สะสมเหรียญจากการเดินและการนอน</span></div></div>
     <div class="tr-tabs" id="trTabs"><i class="ind"></i><button class="on" data-t="orig">Eli Originals</button><button data-t="fr">Eli friends</button></div>
-    <div class="tr-grid" id="trGrid" style="height:${cartTop - 246}px"></div>
-    <button class="tr-cart press" id="trCart" style="top:${cartTop}px"><span class="ci">${wi('tr_cartbar')}<b id="trN">0</b></span><i class="dv"></i><span id="trTxt"></span><i class="ar">→</i></button>`;
-  const eli = new Eli(pg, { size: 84, x: 291, y: 180 }); eli.pose('ready1');
-  every(3400, () => { eli.pose('cheer2'); eli.jump(18, 360).then(() => eli.pose('ready1')); });
+    <div class="tr-grid" id="trGrid" style="height:${cartTop - 304}px"></div>
+    <div class="tr-cart2" id="trBar" style="top:${cartTop - 12}px">
+      <span class="ci">${wi('tr_cartbar')}<b id="trN">0</b></span>
+      <span class="tx"><span id="trTxt">ตะกร้า</span><b><i id="trSum">0</i> <small>coins</small></b></span>
+      <span class="th" id="trThumbs"></span>
+      <button class="cta press" id="trCart">แลกเลย</button></div>`;
   const cartInfo = () => { const n = G.cart.length, sum = G.cart.reduce((a, id) => a + shopItem(id).c, 0); return { n, sum }; };
-  const paintCart = () => { const { n, sum } = cartInfo(); $('#trN', pg).textContent = n; $('#trTxt', pg).textContent = n ? `ตะกร้า ${n} ชิ้น · รวม ${fmt(sum)} coins · ยืนยันการแลก` : 'ตะกร้าว่าง · กด + เพื่อเลือกของรางวัล'; $('#trCart', pg).classList.toggle('empty', !n); };
+  // e-commerce style cart bar: item count + thumbnails + total on the left, one strong "redeem" button on the right
+  const paintCart = () => {
+    const { n, sum } = cartInfo(), bar = $('#trBar', pg);
+    $('#trN', pg).textContent = n; $('#trTxt', pg).textContent = n ? `ตะกร้า ${n} ชิ้น` : 'ตะกร้ายังว่าง';
+    $('#trSum', pg).textContent = fmt(sum); $('#trThumbs', pg).innerHTML = G.cart.slice(-3).map(id => `<img src="${pimg(shopItem(id))}" alt="">`).join('');
+    $('#trCart', pg).textContent = n ? `แลกเลย (${n})` : 'แลกเลย';
+    bar.classList.toggle('empty', !n); bar.classList.toggle('over', sum > G.coins);
+  };
   const draw = () => {
     $('#trGrid', pg).innerHTML = SHOPW[tab].map((it, k) => `<div class="tr-card" style="animation-delay:${k * .05}s" data-id="${it.id}">
       <div class="pi"><img src="${pimg(it)}" alt=""></div>${it.nw ? '<span class="nw">NEW</span>' : ''}
@@ -221,8 +230,8 @@ LIFE.treasury = pg => {
     if (!b) return openSheet(`<h4>${it.n}</h4><div style="display:grid;place-items:center;padding:6px 0 10px"><img src="${pimg(it)}" style="max-height:150px" alt=""></div><p class="wsheet-p">แลกด้วย <b>${fmt(it.c)} coins</b> · ${tab === 'orig' ? 'สินค้าจากแบรนด์ eli จัดส่งถึงบ้าน' : 'สิทธิพิเศษจากพาร์ทเนอร์ของ eli'}</p><button class="btn btn-o press" data-close id="shAdd">ใส่ตะกร้า</button>`, sh => $('#shAdd', sh).onclick = () => { if (!G.cart.includes(it.id)) { G.cart.push(it.id); saveG(); draw(); paintCart(); } });
     const i = G.cart.indexOf(it.id);
     if (i >= 0) { G.cart.splice(i, 1); b.classList.remove('in'); SFX.pop(); }
-    else { G.cart.push(it.id); b.classList.add('in'); SFX.coin(); buzz(12); b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 380 }); eli.pose('cheer1'); eli.jump(26, 380).then(() => eli.pose('ready1')); eli.say('ของดีเลย! 🛒', 1100); }
-    saveG(); paintCart(); const c = $('#trCart', pg); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
+    else { G.cart.push(it.id); b.classList.add('in'); SFX.coin(); buzz(12); b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 380 }); flyTo(b, $('#trBar .ci', pg), `<img src="${pimg(it)}" alt="" style="width:30px;height:30px;object-fit:contain">`, 1); }
+    saveG(); paintCart(); const c = $('#trBar', pg); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
   });
   $('#trCart', pg).onclick = () => {
     const { n, sum } = cartInfo(); if (!n) return toast('เลือกของรางวัลก่อนนะ');

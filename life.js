@@ -141,12 +141,23 @@ function goAway(n) {
   if (n >= 7) G.weekLP = 0;
   if (lost > 0) G.revival = { back: Math.round(lost * .5), days: 0 };
   saveG();
-  go('eli', { force: true, dir: 'none' });
+  go('world', { force: true, dir: 'none' });
   setTimeout(() => {
     if (n >= 7) notify('น้อง ELi', 'นั่งกอดเข่ารอคุณอยู่นะ... กลับมาก่อนพลังจะสลายหมด 🥺', 'pet6');
     else if (n >= 3) notify('น้อง ELi', 'น้อง ELi เริ่มง่วงแล้วน้า แวะมาลูบตัวเติม Life Power ด่วน!', 'pet5');
   }, 500);
   setTimeout(() => shieldSheet(lost), n >= 3 ? 1800 : 600);
+}
+/* "you've been away" push notifications — ELi coaxes the user back (preview: ?away=3d | 3m | 3y, or the demo panel) */
+const AWAY = {
+  '3d': ['น้อง eli คิดถึงแล้วน้า~', 'หายไป 3 วันแล้ว แวะมาเดินเล่นด้วยกันหน่อยนะ 🥺', 'sick'],
+  '3m': ['สวนของเราเงียบไปเลย…', 'ผ่านไป 3 เดือนแล้ว น้อง eli ยังนั่งรอคุณอยู่ตรงนี้นะ 🌱', 'pet6'],
+  '3y': ['ไม่ได้เจอกันตั้ง 3 ปี!', 'น้อง eli ยังเก็บที่ไว้ให้คุณเสมอ กลับมาเริ่มใหม่ด้วยกันนะ 💙', 'pet5'],
+};
+function awayDemo(k) {
+  const a = AWAY[k]; if (!a) return;
+  if (cur !== 'world') go('world', { force: true, dir: 'none' });
+  setTimeout(() => notify(a[0], a[1], a[2]), 900);
 }
 function shieldSheet(lost) {
   const s = G.shield; if (!s) return;
@@ -189,9 +200,9 @@ const DEMO = [
   ['✅ จบวัน (ตามที่ทำจริง)', () => commitDay(false)],
   ['⚡ ข้าม 1 วันแบบขยัน', () => commitDay(true)],
   ['⚡×7 ขยันทั้งสัปดาห์', () => { for (let i = 0; i < 6; i++) { Object.assign(G.today, { steps: 8800, pet: true, sent: true }); const e = earnedToday(); G.total += e; G.weekLP += e; G.streak++; G.dow = (G.dow + 1) % 7; G.today = newDay(); } saveG(); commitDay(true); }],
-  ['😴 หายไป 3 วัน', () => goAway(3)],
-  ['🥺 หายไป 8 วัน', () => goAway(8)],
-  ['💤 หายไป 3 เดือน', () => goAway(90)],
+  ['😴 หายไป 3 วัน', () => awayDemo('3d')],
+  ['💤 หายไป 3 เดือน', () => awayDemo('3m')],
+  ['🕰️ หายไป 3 ปี', () => awayDemo('3y')],
   ['🔄 รีเซ็ตเดโม', () => { G = G0(); saveG(); go('eli', { force: true, dir: 'none' }); toast('รีเซ็ตเป็นผู้ใช้ 21 วันติด (Lv.6)'); }],
 ];
 function demoHTML() {

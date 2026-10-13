@@ -6,21 +6,21 @@
    ELi = the original art only, moved by code. Prototype only: nothing typed in the forms leaves the page. */
 LIFE.welcome = pg => {
   pg.classList.add('w-wel');
-  const [px, py] = coverPt(512, 985);              // top of the painted pedestal
+  const BGS = 1.18, [px0, py0] = coverPt(512, 978);
+  const px = 195 + (px0 - 195) * BGS, py = py0 * BGS;   // top of the painted podium (bg scaled from the top, so ELi stands lower)
   const lx = 195, ly = 92, LW = 74, LH = LW * 630 / 540;   // logo's resting place (centre x, top y, size)
   const word = s => [...s].map((c, i) => c === ' ' ? '<i class="sp"></i>' : `<span style="--i:${i}">${c}</span>`).join('');
   pg.innerHTML = `
     <div class="wl-back"><i class="wl-glow"></i>${Array.from({ length: 22 }, (_, k) => `<i class="wl-star" style="left:${(k * 37) % 100}%;top:${(k * 53) % 100}%;--d:${(k % 7) * .4}s"></i>`).join('')}</div>
     <div class="wl-stage" id="wlStage">
-      <img class="wbg" src="assets/w_welcome_bg.webp" alt="">
+      <img class="wbg" src="assets/w_welcome_bg2.webp" alt="">
       <i class="wl-rays" style="left:${px}px;top:${py - 120}px"></i>
       <i class="wl-portal" style="left:${px}px;top:${py}px"></i>
       <div class="wl-title" style="top:${ly + LH + 22}px"><div class="t1">${word('welcome to')}</div><div class="t2">${word("eli's world")}</div></div>
       <div class="wl-motes">${Array.from({ length: 14 }, (_, k) => `<i style="left:${8 + (k * 61) % 84}%;--d:${(k % 5) * 1.1}s;--t:${7 + k % 4}s;--s:${4 + k % 3 * 2}px"></i>`).join('')}</div>
     </div>
     <div class="wl-logo" id="wlLogo"><i class="lp u"></i><i class="lp s"></i><i class="lp d"></i></div>
-    <i class="wl-ring" id="wlRing"></i>
-    <button class="wl-skip" id="wlSkip">แตะเพื่อข้าม</button>`;
+    <i class="wl-ring" id="wlRing"></i>`;
   const stage = $('#wlStage', pg), logo = $('#wlLogo', pg), ring = $('#wlRing', pg);
   const [pu, ps, pd] = $$('.lp', logo);
   // the logo starts big and white in the middle of the indigo screen
@@ -29,7 +29,6 @@ LIFE.welcome = pg => {
   const eli = new Eli(stage, { size: 206, x: px, y: py + 6 });
   const m3 = T3.mark(pg, { x: lx - LW / 2, y: ly, w: LW });   // the solid 3D mark that takes over once the intro is done
   eli.pose('ready5'); eli.el.style.opacity = 0;
-  const talk = (t, ms) => { if (appH >= 700) eli.say(t, ms); };   // short phones: the bubble would cover the title
   let done = false, skip = false;
   later(0, () => $('#sbar').classList.add('light'));          // white status bar while the screen is indigo
   const A = (el, kf, o) => el.animate(kf, { fill: 'both', ...o });
@@ -69,7 +68,7 @@ LIFE.welcome = pg => {
     burst(stage, px, py - 70, { n: 26, dist: 130, size: 8, colors: ['#2A3B9C', '#F2C14E', '#E3D9CB', '#FFFFFF', '#7B95F4'] });
     burst(stage, px, py - 70, { n: 12, dist: 70, size: 5, colors: ['#F2C14E', '#FFFFFF'], shape: 'star' });
     await w8(380);
-    eli.pose('cheer1'); talk('สวัสดี! 💙', 1800);
+    eli.pose('cheer1');
   };
   const finish = () => {
     if (done) return; done = true;
@@ -79,12 +78,10 @@ LIFE.welcome = pg => {
     const sx = LW / BW, tx = lx - LW / 2 - (cx - BW / 2), ty = ly - (cy - BH / 2);
     logo.style.transform = `translate(${tx}px,${ty}px) scale(${sx})`; [pu, ps, pd].forEach(p => p.style.background = '#2A3B9C');
     stage.style.clipPath = 'none'; eli.el.style.opacity = 1; $('#sbar').classList.remove('light');
-    $('#wlSkip', pg).remove();
     idle(); orbit();
     if (G.member) later(900, enterWorld); else later(500, openJoin);
   };
   intro().then(() => later(900, finish));
-  $('#wlSkip', pg).onclick = () => { skip = true; finish(); };
   // after the intro: ELi bounces on the pedestal, tap = a happy jump
   let idling = false;
   const idle = () => {
@@ -122,50 +119,77 @@ LIFE.welcome = pg => {
   };
   // members go straight in: ELi dashes off and the world zooms open
   const enterWorld = () => {
-    talk(`ยินดีต้อนรับกลับ ${G.citizen.name}!`, 1400);
-    later(700, () => {
-      eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(560, eli.y, 650, 'ease-in');
+    later(300, () => {
+      eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(195 + appW / 2 + 140, eli.y, 650, 'ease-in');
       pg.classList.add('leave'); SFX.tone(523, .35, 'triangle', .05, 0, 1.8);
       later(620, () => go('world', { dir: 'none' }));
     });
   };
   // the join pop-up: sign up / log in / continue with Apple (prototype — nothing is sent anywhere)
+  // sign-in pop-up (client 2026-10-13): LINE · TikTok · Facebook · Apple first, e-mail as a small link. Prototype — nothing leaves the page.
+  const SOC = [
+    ['line', 'LINE', '<path d="M12 3.4C6.7 3.4 2.4 6.9 2.4 11.2c0 3.9 3.4 7.1 8 7.7.3.1.7.2.8.5.1.3.1.6 0 .9l-.1.8c0 .2-.2 1 .9.5 1.1-.5 5.8-3.4 7.9-5.8 1.5-1.6 2.1-3.2 2.1-4.9 0-4.3-4.3-7.8-9.6-7.8z"/>'],
+    ['tiktok', 'TikTok', '<path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9.1a7.3 7.3 0 0 0 4.3 1.4V7.4a4.3 4.3 0 0 1-3.2-1.6z"/>'],
+    ['fb', 'Facebook', '<path d="M13.6 21.5v-7.6h2.6l.4-3h-3V9c0-.9.2-1.5 1.5-1.5h1.6V4.8c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.9v3h2.6v7.6z"/>'],
+    ['apple', 'Apple', '<path d="M16.4 12.7c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/>'],
+  ];
   pg.insertAdjacentHTML('beforeend', `<div class="wl-join" id="wlJoin">
     <div class="jc">
       <i class="grab"></i>
       <div class="v v0 on">
-        <b class="h">มาเป็นพลเมือง eli's world กัน!</b>
-        <p>สมัครสมาชิกเพื่อรับ Eli Citizen ID แล้วเริ่มเลี้ยงน้อง eli ด้วยการเดินและการนอนของคุณ</p>
-        <button class="jb p press" data-v="1">สมัครสมาชิก</button>
-        <button class="jb s press" data-v="2">เข้าสู่ระบบ</button>
-        <button class="jb a press" id="wlApple"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M16.4 12.7c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>ดำเนินการต่อด้วย Apple</button>
+        <b class="h">เข้าสู่ eli's world</b>
+        ${SOC.map(([k, n, d]) => `<button class="jb so ${k} press" data-so="${k}" data-n="${n}"><svg viewBox="0 0 24 24" fill="currentColor">${d}</svg><span>ดำเนินการต่อด้วย ${n}</span></button>`).join('')}
+        <button class="jb t sm" type="button" data-v="2">หรือ เข้าสู่ระบบด้วยอีเมล</button>
       </div>
       <form class="v v1" autocomplete="off">
-        <b class="h">สมัครสมาชิก</b>
+        <b class="h">สมัครด้วยอีเมล</b>
         <label class="jf"><span>ชื่อเล่น</span><input name="n" placeholder="เช่น สายสุขภาพ"></label>
         <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="you@email.com"></label>
         <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="อย่างน้อย 6 ตัว"></label>
         <button class="jb p press" type="submit">สร้างบัญชี</button>
-        <button class="jb t" type="button" data-v="0">‹ ย้อนกลับ</button>
+        <button class="jb t" type="button" data-v="2">‹ มีบัญชีแล้ว เข้าสู่ระบบ</button>
       </form>
       <form class="v v2" autocomplete="off">
-        <b class="h">เข้าสู่ระบบ</b>
+        <b class="h">เข้าสู่ระบบด้วยอีเมล</b>
         <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="you@email.com"></label>
         <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="รหัสผ่าน"></label>
         <button class="jb p press" type="submit">เข้าสู่ระบบ</button>
+        <button class="jb t" type="button" data-v="1">ยังไม่มีบัญชี? สมัครด้วยอีเมล</button>
         <button class="jb t" type="button" data-v="0">‹ ย้อนกลับ</button>
       </form>
     </div></div>`);
   const join = $('#wlJoin', pg);
-  const view = v => { $$('.v', join).forEach(x => x.classList.toggle('on', x.classList.contains('v' + v))); if (v) setTimeout(() => $(`.v${v} input`, join)?.focus(), 350); };
-  const openJoin = () => { join.classList.add('on'); SFX.pop(); talk('สมัครแป๊บเดียว แล้วไปเล่นกัน!', 2200); };
+  // while the pop-up is open the world slides up (podium + ELi stay visible above it); the title and the logo stay put
+  const title = $('.wl-title', pg), tTop = title.offsetTop;
+  const lift = () => {
+    const on = join.classList.contains('on'), jt = on ? appH - $('.jc', join).offsetHeight : appH;
+    const d = on ? Math.max(0, py - (jt - 26)) : 0;   // keep the rim of the podium in sight
+    stage.style.transform = d ? `translateY(${-d}px)` : '';
+    title.style.top = (tTop + d) + 'px';   // (layout move, not a transform: a transform would break the gradient text)
+    // ELi shrinks a little if it would touch the title; on very short screens the title steps aside (the pop-up names the app anyway)
+    let room = py - d - (tTop + title.offsetHeight + 14), hide = d && room / 206 < .7;
+    if (hide) room = py - d - (ly + LH + 12);
+    title.style.opacity = hide ? '0' : '';
+    eli.el.style.scale = d ? String(Math.max(.5, Math.min(1, room / 206))) : '';
+  };
+  const view = v => { $$('.v', join).forEach(x => x.classList.toggle('on', x.classList.contains('v' + v))); if (v) setTimeout(() => $(`.v${v} input`, join)?.focus(), 350); later(30, lift); };
+  const openJoin = () => { join.classList.add('on'); SFX.pop(); lift(); };
   $$('[data-v]', join).forEach(b => b.onclick = () => { SFX.pop(); view(+b.dataset.v); });
-  const welcomeIn = name => {
-    G.member = true; if (name) G.citizen.name = name; saveG();
-    join.classList.remove('on'); SFX.levelup(); buzz([20, 40, 20]); confetti(80);
+  // the first login creates the Eli Citizen ID: 6 digits, a running number (on the real backend the server hands it out)
+  const newId = () => { let n = 1; try { n = +(localStorage.getItem('eli_cid_seq') || 0) + 1; localStorage.setItem('eli_cid_seq', n); } catch (e) {} return String(n).padStart(6, '0'); };
+  const welcomeIn = (name, isNew = true) => {
+    G.member = true; if (name) G.citizen.name = name;
+    if (isNew || !/^\d{6}$/.test(G.citizen.id)) G.citizen.id = newId();
+    saveG();
+    join.classList.remove('on'); lift();
+    const card = document.createElement('div'); card.className = 'wl-cid';
+    card.innerHTML = `<div class="cc"><i class="wlogo"></i><span class="k">Eli Citizen ID</span><b class="id">${[...G.citizen.id].map((d, i) => `<i style="--i:${i}">${d}</i>`).join('')}</b><span class="nm">${G.citizen.name}</span></div>`;
+    pg.append(card); later(20, () => card.classList.add('on'));
+    SFX.levelup(); buzz([20, 40, 20]); later(500, () => confetti(80));
     eli.pose('cheer1'); eli.jump(50, 500).then(() => eli.pose('cheer6'));
-    talk(`ยินดีต้อนรับ ${G.citizen.name}! 🎉`, 1500);
-    later(1300, () => { eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(560, eli.y, 650, 'ease-in'); pg.classList.add('leave'); later(620, () => go('world', { dir: 'none' })); });
+    let gone = false;
+    const go2 = () => { if (gone) return; gone = true; card.classList.remove('on'); eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(195 + appW / 2 + 140, eli.y, 650, 'ease-in'); pg.classList.add('leave'); later(620, () => go('world', { dir: 'none' })); };
+    card.onclick = go2; later(2800, () => cur === 'welcome' && go2());
   };
   const shake = el => el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 300 });
   $('.v1', join).onsubmit = e => {
@@ -178,7 +202,11 @@ LIFE.welcome = pg => {
     e.preventDefault(); const f = e.target, m = f.e.value.trim(), p = f.p.value;
     const bad = !/^\S+@\S+\.\S+$/.test(m) ? f.e : !p ? f.p : null;
     if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast('กรอกอีเมลและรหัสผ่านก่อนนะ'); }
-    welcomeIn();
+    welcomeIn(null, false);
   };
-  $('#wlApple', join).onclick = () => welcomeIn();
+  $$('[data-so]', join).forEach(b => b.onclick = () => {
+    if (join.classList.contains('busy')) return; join.classList.add('busy'); b.classList.add('wait'); SFX.pop();
+    $('span', b).textContent = `กำลังเชื่อมต่อ ${b.dataset.n}…`;
+    later(1000, () => { join.classList.remove('busy'); welcomeIn(null, true); });
+  });
 };

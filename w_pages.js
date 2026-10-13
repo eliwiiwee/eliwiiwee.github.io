@@ -20,13 +20,10 @@ LIFE.dream = pg => {
     <div class="dr-coin coinchip2">${wi('w_coin')}<b data-coins>${wcoins()}</b></div>
     <section class="dr-panel">
       <b class="dr-ttl">Sleep Stages</b>
-      <span class="dr-q">คุณภาพการนอน <b>${q}%</b> (${qualityWord(q)})</span>
+      <span class="dr-q">คุณภาพการนอน <b>${q}%</b></span>
       <div class="dr-bar"><i style="width:${st.d / tot * 100}%"></i><i style="width:${st.l / tot * 100}%"></i><i style="width:${st.r / tot * 100}%"></i></div>
       <div class="dr-leg"><span><i style="background:#5157D6"></i>Deep <b>${hrs(st.d)}</b></span><span><i style="background:#8FA4F6"></i>Light <b>${hrs(st.l)}</b></span><span><i style="background:#F7D47A"></i>REM <b>${hrs(st.r)}</b></span></div>
-      <i class="dr-div"></i>
-      <button class="dr-btn press" id="drBed"><i class="moon"></i>เริ่มโหมดเตรียมเข้านอน</button>
-    </section>
-    <div class="dr-night"><div class="dr-nt"><b>ราตรีสวัสดิ์ ✨</b><span>น้อง eli จะนอนเป็นเพื่อน · ปลุกตอน 06:30</span><div class="clock" id="drClock">22:30</div></div><button class="dr-wake press" id="drWake">☀️ ตื่นแล้ว</button></div>`;
+    </section>`;
   const stage = $('.dr-st', pg);
   // ELi tucked in bed: original art, sitting under the blanket layer (dr-front), breathing slowly
   const eli = new Eli(stage, { size: 272 * s, x: 500 * s, y: 720 * s });
@@ -49,18 +46,5 @@ LIFE.dream = pg => {
     giveCoins(n, 'dream', chest);
     later(400, () => { $$('[data-coins]').forEach(e => e.textContent = wcoins()); });
     eli.say('เย้! ได้เหรียญแล้ว ✨', 1600);
-  };
-  // bedtime mode: dim the room, count the night, wake up to a fresh sleep record
-  let tick;
-  $('#drBed', pg).onclick = () => {
-    pg.classList.add('bed'); SFX.pop(); eli.say('ราตรีสวัสดิ์~', 1200);
-    let m = 22 * 60 + 30; clearInterval(tick);
-    tick = setInterval(() => { m = (m + 7) % 1440; $('#drClock', pg).textContent = `${String(m / 60 | 0).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }, 60);
-    cleanup.push(() => clearInterval(tick));
-  };
-  $('#drWake', pg).onclick = () => {
-    clearInterval(tick); pg.classList.remove('bed');
-    G.today.sleep = 7.5; G.today.coinSleep = true; G.today.dreamChest = false; saveG();
-    toast('บันทึกการนอน 7.5 ชม. · หีบ Dream Chest พร้อมเปิดแล้ว!'); go('dream', { force: true, dir: 'none' });
   };
 };

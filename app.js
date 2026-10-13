@@ -489,7 +489,7 @@ Object.assign(R, LIFE);
 const TBSET = (() => { const v = new URLSearchParams(location.search).get('icons'); return ['0', 'A', 'B', 'C', 'D'].includes(v) ? v : TB_DEFAULT; })();   // ?icons=… only for comparing sets; not remembered
 $('#tabbar').classList.add('set' + TBSET);
 $('#tabbar').innerHTML = TABS.map(([k, l]) => {
-  const n = TBSET === '0' ? 'assets/' + { world: 't_planet0', trek: 't_mount', dream: 't_moon', hall: 't_trophy', treasury: 't_chest' }[k] + '.png' : TBSET === 'D' ? `assets/hd_${k}.png` : `assets/tb_${TBSET}_${k}.png`;
+  const n = TBSET === '0' ? 'assets/' + { world: 't_planet0', trek: 't_mount', dream: 't_moon', hall: 't_trophy', treasury: 't_chest' }[k] + '.png' : TBSET === 'D' ? `assets/${k === 'trek' ? 'hd_trek2' : 'hd_' + k}.png` : `assets/tb_${TBSET}_${k}.png`;
   return `<button data-go="${k}"${k === 'trek' ? ' class="play"' : ''}><span class="tb-i"><img class="mk" src="${n}" alt=""></span><span class="tb-l"${TBSET === 'D' ? ` data-fw="${{ world: 48.6, dream: 50, trek: 51, hall: 40.8, treasury: 36.6 }[k]}"` : ''}>${l}</span></button>`;
 }).join('') + '<i class="bar"></i>' + (TBSET === 'D' ? spk('left:0;top:1.9px;width:16.4px;height:16.4px', -35) + spk('left:214.5px;top:-4px;width:14px;height:15px', 40, 2) : '');
 if (TBSET === 'D') { hdFit($('#tabbar')); document.fonts?.ready.then(() => hdFit($('#tabbar'))); }
@@ -556,5 +556,7 @@ function setH(H, W = 390) {
 }
 addEventListener('resize', fit); fit();
 const start = location.hash.slice(1);
+const AWQ = new URLSearchParams(location.search).get('away');   // preview the come-back notification
+if (AWQ) setTimeout(() => awayDemo(AWQ), 1200);
 go(R[start] ? start : 'welcome');
 addEventListener('hashchange', () => { const h = location.hash.slice(1); if (R[h] && h !== cur) go(h); });

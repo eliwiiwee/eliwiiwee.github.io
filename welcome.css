@@ -5,7 +5,7 @@
 @keyframes wlPulse{50%{transform:scale(1.15);opacity:.7}}
 .wl-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(255,255,255,.6);animation:twk 2.2s ease-in-out infinite;animation-delay:var(--d)}
 .wl-stage{position:absolute;inset:0;clip-path:circle(0px at 50% 42%);background:var(--wcream)}
-.wl-stage .wbg{transform:translate(calc(var(--px) * -10px),calc(var(--py) * -8px)) scale(1.06)}
+.wl-stage .wbg{transform-origin:50% 0;transform:translate(calc(var(--px) * -10px),calc(var(--py) * -8px)) scale(1.18)}
 /* sunburst behind ELi — quiet sand rays turning slowly */
 .wl-rays{position:absolute;width:560px;height:560px;margin:-280px;border-radius:50%;z-index:1;pointer-events:none;opacity:0;
   background:repeating-conic-gradient(from 0deg,rgba(220,200,165,.38) 0 7deg,transparent 7deg 18deg);
@@ -71,3 +71,34 @@
 .jf span{display:block;font:600 11px var(--f);color:#5C5651;margin:0 0 4px 4px}
 .jf input{width:100%;height:44px;padding:0 14px;border:0;border-radius:14px;background:#F4F0EA;font:500 14px var(--f);color:var(--wink);outline:none;box-shadow:0 0 0 1.5px transparent inset;transition:box-shadow .2s}
 .jf input:focus{box-shadow:0 0 0 1.5px var(--wi) inset;background:#fff}
+/* round 2 (client 2026-10-13): no skip, no speech; social sign-in first, e-mail as a small link; the Citizen ID card */
+.w-wel .wl-stage,.w-wel .m3{transition:transform .55s cubic-bezier(.2,.9,.3,1),opacity .25s}
+.w-wel .wl-title{transition:top .55s cubic-bezier(.2,.9,.3,1),opacity .3s}
+.w-wel.ready .wl-back{background:#F4EFE6}
+.w-wel .wl-stage .eli-m{transition:scale .55s cubic-bezier(.2,.9,.3,1)}
+.wl-join .h{text-align:center;margin-bottom:12px}
+.jb.so{position:relative;justify-content:center;gap:10px;color:#fff;font-weight:700}
+.jb.so svg{position:absolute;left:18px;width:22px;height:22px}
+.jb.so.line{background:#06C755;box-shadow:0 3px 0 #04A346}
+.jb.so.tiktok{background:#111;box-shadow:0 3px 0 #000}
+.jb.so.tiktok svg{filter:drop-shadow(-1.2px -1px 0 #25F4EE) drop-shadow(1.2px 1px 0 #FE2C55)}
+.jb.so.fb{background:#1877F2;box-shadow:0 3px 0 #1060C9}
+.jb.so.apple{background:#000;box-shadow:0 3px 0 #333}
+.jb.so.wait{opacity:.75}
+.jb.so.wait::after{content:"";position:absolute;right:18px;width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .8s linear infinite}
+.wl-join.busy .jb.so:not(.wait){opacity:.5;pointer-events:none}
+.jb.t.sm{height:34px;margin-top:8px;font:600 12.5px var(--f);color:#6E6A66;text-decoration:underline;text-underline-offset:3px}
+.wl-cid{position:absolute;inset:0;z-index:22;display:grid;place-items:center;background:rgba(20,24,60,0);transition:background .35s;pointer-events:none}
+.wl-cid.on{background:rgba(20,24,60,.35);pointer-events:auto}
+.wl-cid .cc{position:relative;width:286px;padding:20px 20px 18px;border-radius:24px;text-align:center;color:#fff;
+  background:linear-gradient(150deg,#4A62D8 0%,#2A3B9C 55%,#1C287A 100%);box-shadow:0 0 0 4px #fff,0 18px 40px rgba(20,24,60,.4);transform:translateY(40px) scale(.7) rotate(-6deg);opacity:0;transition:transform .6s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+.wl-cid.on .cc{transform:none;opacity:1}
+.wl-cid .wlogo{width:40px;height:44px;margin:0 auto 6px;background:#F6C343}
+.wl-cid .k{display:block;font:700 13px var(--f);letter-spacing:.08em;color:#C9D2FF;text-transform:uppercase}
+.wl-cid .id{display:flex;justify-content:center;gap:4px;margin:10px 0 8px}
+.wl-cid .id i{display:grid;place-items:center;width:34px;height:46px;border-radius:9px;background:rgba(255,255,255,.14);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset;font:700 28px var(--num);font-style:normal;color:#F6C343;animation:wlDigit .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.35s + var(--i) * 90ms)}
+@keyframes wlDigit{from{transform:translateY(-14px) rotateX(90deg);opacity:0}}
+.wl-cid .nm{display:block;font:800 16px var(--f)}
+.wl-join .v0 .jb.so{height:44px;margin-top:8px;font-size:14px}
+.wl-join .v0 .h{font-size:18px;margin-bottom:6px}
+.wl-join .jc{padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}

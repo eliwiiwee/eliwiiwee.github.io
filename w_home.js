@@ -57,43 +57,43 @@ LIFE.world = pg => {
   const ab = (x0, y0, x1, y1) => `left:${(x0 * K).toFixed(1)}px;top:${(H - (1536 - y0) * K).toFixed(1)}px;width:${((x1 - x0) * K).toFixed(1)}px;height:${((y1 - y0) * K).toFixed(1)}px`;
   const tx = (pos, fw, cls, html, id = '') => `<span class="hd-t ${cls}" ${id ? `id="${id}"` : ''} data-fw="${(fw * K).toFixed(1)}" style="${pos}">${html}</span>`;
   pg.innerHTML = `<img class="wbg" src="assets/hdD_bg.webp" alt="">
-    <div class="hd-card hd-me" id="whId" style="${at(150, 102, 492, 236)}"></div>
-    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="assets/w_avatar.webp" alt=""></i>
+    <button class="hd-card hd-me press" id="whId" data-go="settings" aria-label="โปรไฟล์และการตั้งค่า" style="${at(150, 102, 492, 236)}"></button>
+    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""></i>
+    <img class="hd-ic hd-avg" src="assets/hd_gear.png" style="${at(186, 186, 246, 246)}" alt="">
     ${tx(at(250, 118, 367, 154), 117, 'nm', G.citizen.name)}
-    ${tx(at(250, 160, 339, 178), 89, 'cid', G.citizen.id)}
+    ${tx(at(250, 160, 339, 178), 89, 'cid', 'ID ' + G.citizen.id)}
     ${tx(at(239, 189, 300, 215), 61, 'lv', 'Lv.' + L)}
     <i class="hd-bar" style="${at(311, 194, 473, 216)}"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i>
     <img class="hd-ic" src="assets/hd_leaf.png" style="${at(436, 82, 502, 150)}" alt="">
     ${spk(at(45, 58, 98, 108), -30)}
-    <button class="hd-card hd-coin coinchip2 press" style="${at(630, 115, 852, 212)};--d:.05s" data-go="treasury"></button>
-    <img class="hd-ic" src="assets/hd_coin.png" style="${at(642, 122, 725, 205)}" alt="">
-    ${tx(at(732, 140, 832, 178), 100, 'coin', `<b data-coins>${wcoins()}</b>`)}
-    ${spk(at(606, 118, 646, 170), -70, 2)}
-    <button class="hd-card hd-gear press" style="${at(862, 115, 955, 210)};--d:.08s" data-go="settings" aria-label="ตั้งค่า"><img src="assets/hd_gear.png" alt=""></button>
-    ${spk(at(938, 96, 980, 142), 40, 2)}
-    <button class="hd-card hd-dq press" id="whDq" style="${at(135, 287, 512, 380)};--d:.1s">
-      <span class="hd-t dq" data-fw="${(243 * K).toFixed(1)}" style="left:${(84 * K).toFixed(1)}px">Daily Quest&nbsp; <span id="whDqN">${qDone}/2</span></span><i class="chev"></i></button>
-    <img class="hd-ic" src="assets/hd_dq.png" style="${at(36, 256, 210, 404)}" alt="">
-    ${spk(at(165, 276, 209, 318), 25, 2)}
+    <button class="hd-card hd-coin coinchip2 press" style="${at(738, 115, 960, 212)};--d:.05s" data-go="treasury"></button>
+    <img class="hd-ic" src="assets/hd_coin.png" style="${at(750, 122, 833, 205)}" alt="">
+    ${tx(at(840, 140, 940, 178), 100, 'coin', `<b data-coins>${wcoins()}</b>`)}
+    ${spk(at(714, 118, 754, 170), -70, 2)}
     <button class="hd-card hd-age press" id="whAge" style="${at(537, 250, 960, 395)};--d:.13s"></button>
-    <i class="hd-pill beige" style="${at(560, 302, 719, 378)}"></i><i class="hd-pill green" style="${at(750, 300, 932, 378)}"></i><i class="hd-dv" style="${at(734, 278, 737, 378)}"></i>
-    ${tx(at(590, 268, 694, 300), 104, 'agl', 'อายุจริง')}
-    ${tx(at(786, 266, 922, 294), 136, 'agl bio', 'Eli Bio-age')}
-    ${tx(at(590, 312, 690, 368), 96, 'agn', `${age}<small>ปี</small>`)}
-    ${tx(at(780, 312, 914, 368), 130, 'agn bio', `<em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}`)}
-    ${spk(at(922, 300, 964, 352), 70, 2, '#3DBE57')}
-    <div class="hd-card hd-q s1 ${t.steps >= 7000 ? 'done' : ''}" style="${ab(137, 1162, 482, 1277)};--d:.24s" data-go="trek"></div>
-    <img class="hd-ic" src="assets/hd_shoe.png" style="${ab(46, 1158, 184, 1280)}" alt="">
-    ${tx(ab(205, 1176, 332, 1201), 127, 'qh', 'Step quest')}
-    ${tx(ab(205, 1205, 425, 1238), 220, 'qn', `<b id="whS">${fmt(t.steps)}</b> / 7,000 ก้าว`)}
-    <i class="hd-bar q" style="${ab(205, 1247, 457, 1267)}"><i id="whSb" data-w="${Math.min(100, t.steps / 70)}"></i></i>
-    ${spk(ab(42, 1158, 104, 1222), -35)}
-    <div class="hd-card hd-q s2 ${t.sleep >= 7 ? 'done' : ''}" style="${ab(600, 1162, 970, 1277)};--d:.28s" data-go="dream"></div>
-    <img class="hd-ic" src="assets/hd_sleep.png" style="${ab(536, 1160, 668, 1280)}" alt="">
-    ${tx(ab(677, 1176, 915, 1201), 238, 'qh', 'Sleep recovery quest')}
-    ${tx(ab(677, 1205, 822, 1238), 145, 'qn', `<b>${t.sleep}</b> / 7 ชม.`)}
-    <i class="hd-bar q" style="${ab(677, 1247, 935, 1267)}"><i data-w="${Math.min(100, t.sleep / 7 * 100)}"></i></i>
-    ${spk(ab(922, 1206, 968, 1250), 60, 2)}`;
+    <i class="hd-pill green" style="${at(552, 264, 818, 381)}"></i><i class="hd-dv" style="${at(830, 284, 833, 362)}"></i>
+    ${tx(at(574, 272, 744, 298), 150, 'agl bio l', 'Eli Bio-age')}
+    ${tx(at(574, 302, 806, 374), 196, 'agn bio l', `<em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}`)}
+    ${tx(at(842, 288, 948, 312), 92, 'agl sm', 'อายุจริง')}
+    ${tx(at(842, 318, 948, 356), 78, 'agn sm', `${age}<small>ปี</small>`)}
+    ${spk(at(922, 236, 964, 288), 70, 2, '#3DBE57')}
+    <div class="hd-card hd-dqp" style="${ab(36, 1036, 988, 1306)}"></div>
+    <img class="hd-ic" src="assets/hd_dq.png" style="${ab(26, 990, 150, 1100)}" alt="">
+    ${spk(ab(126, 994, 166, 1036), 25, 2)}
+    ${tx(ab(156, 1048, 470, 1086), 262, 'dqh', `Daily Quest <span id="whDqN">${qDone}/2</span>`)}
+    ${tx(ab(620, 1052, 962, 1082), 300, 'dqs r', 'ภารกิจประจำวัน 2 อย่าง')}
+    <img class="hd-ic" src="assets/hd_shoe.png" style="${ab(50, 1100, 156, 1196)}" alt="">
+    ${tx(ab(172, 1108, 420, 1136), 168, 'qh', 'Step quest')}
+    ${tx(ab(560, 1104, 962, 1140), 236, 'qn r', `<b id="whS">${fmt(t.steps)}</b> / 7,000 ก้าว`)}
+    <i class="hd-bar q ${t.steps >= 7000 ? 'done' : ''}" style="${ab(172, 1152, 962, 1180)}"><i id="whSb" data-w="${Math.min(100, t.steps / 70)}"></i></i>
+    <i class="hd-dv" style="${ab(172, 1198, 962, 1200)}"></i>
+    <img class="hd-ic" src="assets/hd_sleep.png" style="${ab(48, 1204, 158, 1300)}" alt="">
+    ${tx(ab(172, 1212, 520, 1240), 250, 'qh', 'Sleep recovery quest')}
+    ${tx(ab(700, 1208, 962, 1244), 150, 'qn r', `<b>${t.sleep}</b> / 7 ชม.`)}
+    <i class="hd-bar q ${t.sleep >= 7 ? 'done' : ''}" style="${ab(172, 1256, 962, 1284)}"><i data-w="${Math.min(100, t.sleep / 7 * 100)}"></i></i>
+    <button class="hd-hit" id="whDq" style="${ab(36, 1036, 988, 1098)}" aria-label="Daily Quest"></button>
+    <button class="hd-hit" data-go="trek" style="${ab(36, 1098, 988, 1199)}" aria-label="Step quest"></button>
+    <button class="hd-hit" data-go="dream" style="${ab(36, 1199, 988, 1306)}" aria-label="Sleep recovery quest"></button>`;
   hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));
   // full-screen mode: the top HUD hugs the screen corners (left group → left edge, right group → right edge)
   [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg')) el.classList.add(el.offsetLeft < 195 ? 'hl' : 'hr'); });
@@ -102,7 +102,7 @@ LIFE.world = pg => {
   // ELi lives on the lawn; mood/pose follows the Bio-age (younger = bouncy, older = tired)
   const mood = bio <= age - 2 ? 'fit' : bio >= age + 2 ? 'tired' : 'ok';
   const [cx, cy] = coverPt(520, 900);
-  const top = 180, bottom = appH - 150;          // free band between the top HUD and the quest stickers
+  const top = 175, bottom = appH - 200;          // free band between the top HUD and the Daily Quest panel
   const fy = Math.max(top + 150, Math.min(bottom, cy));
   pg.insertAdjacentHTML('beforeend', `<i class="wh-glow" style="left:${cx}px;top:${fy}px"></i>`);
   const eli = new Eli(pg, { size: 158, x: cx, y: fy });
@@ -176,7 +176,6 @@ LIFE.world = pg => {
   // coins in front of / behind ELi depending on who is nearer
   T3.on(() => coins.forEach(c => c.classList.toggle('front', c.y > eli.y)));
   // cards
-  $('#whId', pg).onclick = () => openSheet(`<h4>Eli Citizen ID</h4><div class="wid-card"><img src="assets/w_avatar.webp" alt=""><div><b>${G.citizen.name}</b><span>${G.citizen.id}</span><span>Lv.${L} · ${LPX.tier(L).name}</span><span>${fmt(G.total)} / ${fmt(hi)} LP</span></div></div><button class="btn btn-d press" data-close>ปิด</button>`);
   $('#whDq', pg).onclick = () => openSheet(`<h4>Daily Quest ${qDone}/2</h4>
     <div class="wq-row ${t.steps >= 7000 ? 'ok' : ''}">${wi('w_shoe')}<div><b>Step quest</b><span>เดินครบ 7,000 ก้าว · ตอนนี้ ${fmt(t.steps)}</span></div><em>+1 coin</em></div>
     <div class="wq-row ${t.sleep >= 7 ? 'ok' : ''}">${wi('w_moonz')}<div><b>Sleep recovery quest</b><span>นอน 7–9 ชม. · เมื่อคืน ${t.sleep} ชม.</span></div><em>+1 coin</em></div>

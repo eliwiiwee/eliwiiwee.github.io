@@ -19,6 +19,8 @@ const T2 = {
     lock: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>',
   },
   speed: (m, s) => s > 0 ? (m / 1000) / (s / 3600) : 0,               // km/h
+  pace: (m, s) => m > 0 ? s / (m / 1000) : 0,                          // seconds per km
+  paceTxt: (m, s) => { if (m < 50) return '–:––'; const p = Math.min(5999, Math.round(T2.pace(m, s))); return `${Math.floor(p / 60)}:${String(p % 60).padStart(2, '0')}`; },   // 6:08 (min/km)
   say(text) {   // spoken summary (Thai voice if the device has one), falls back silently
     try {
       const u = new SpeechSynthesisUtterance(text); u.lang = 'th-TH'; u.rate = 1.02;
@@ -154,36 +156,56 @@ LIFE.trek = pg => {
 /* ═════════ After the run: the post composer (like Instagram / Facebook) ═════════ */
 LIFE.trekdone = pg => {
   pg.classList.add('t2-post');
-  const real = RUN.m > 50, km = real ? RUN.m / 1000 : 2.07, sec = real ? RUN.sec : 760, spd = T2.speed(km * 1000, sec);   // opened straight from a link → sample numbers
+  const real = RUN.m > 50, km = real ? RUN.m / 1000 : 2.07, sec = real ? RUN.sec : 760, pc = T2.paceTxt(km * 1000, sec);   // opened straight from a link → sample numbers
   const hr = RUN.hrN ? Math.round(RUN.hr / RUN.hrN) : 142, steps = Math.round(km * 1283), lp = Math.max(12, Math.round(km * 14.3));
-  const P = { photo: null, style: 'sticker', vis: 'pub' };
+  // ELi stickers on the picture (client 2026-10-15): the client's original drawings only — pick any, drag to move, pull the corner / pinch / slider to resize
+  const STK = [['eli_happy', 'ยิ้ม'], ['eli_run', 'วิ่ง'], ['eli_music', 'ฟังเพลง'], ['eli_sick', 'ไม่สบาย']];
+  const P = { photo: null, style: 'sticker', vis: 'pub', stk: [{ k: 0, x: 870, y: 820, s: 360 }], sel: -1 };   // starts where ELi sat on the card
   pg.innerHTML = `
     <div class="pp-bar"><button class="pp-x" id="ppX" aria-label="ปิด">✕</button><b>โพสต์กิจกรรม</b><button class="pp-ok" id="ppSave2">บันทึก</button></div>
     <div class="pp-scroll">
       <div class="pp-me"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""><div><b>${G.citizen.name}</b><span>${RUN.sport} · วันนี้</span></div></div>
-      <div class="pp-pic"><canvas id="ppCv" width="1080" height="1350"></canvas>
+      <div class="pp-pic" id="ppPic"><canvas id="ppCv" width="1080" height="1350"></canvas><div class="pp-stk" id="ppStk"></div>
         <label class="pp-pick press">${T2.ic.photo}<span>เลือกรูปภาพ</span><input type="file" accept="image/*" id="ppFile" hidden></label></div>
+      <div class="pp-stkbar"><div class="hd"><b>สติกเกอร์น้อง eli</b><span>แตะเพื่อใส่ในภาพ · ลากเพื่อย้าย</span></div>
+        <div class="pp-stks" id="ppStks">${STK.map(([f, n], i) => `<button data-k="${i}" aria-label="ใส่สติกเกอร์น้อง eli ท่า${n}"><img src="assets/${f}.webp" alt=""></button>`).join('')}</div>
+        <label class="pp-size off" id="ppSize"><span>ขนาดน้อง</span><input type="range" min="140" max="900" step="10" value="360" id="ppSz" disabled><em id="ppSzT">แตะที่น้องในภาพก่อน</em></label></div>
       <div class="pp-styles" id="ppStyles">
-        <button data-s="sticker" class="on">สติกเกอร์</button><button data-s="classic">คลาสสิก</button><button data-s="minimal">มินิมอล</button><button data-s="gold">ทอง</button></div>
+        <button data-s="sticker" class="on">การ์ด</button><button data-s="classic">คลาสสิก</button><button data-s="minimal">มินิมอล</button><button data-s="gold">ทอง</button></div>
       <div class="pp-stats">
         <div class="big"><b>${km.toFixed(2)}</b><span>กม.</span></div>
-        <div><b>${clock(sec)}</b><span>เวลา</span></div><div><b>${spd.toFixed(1)}</b><span>กม./ชม.</span></div><div><b>${hr}</b><span>♥ เฉลี่ย</span></div></div>
+        <div><b>${clock(sec)}</b><span>เวลา</span></div><div><b>${pc}</b><span>เพซ /กม.</span></div><div><b>${hr}</b><span>♥ เฉลี่ย</span></div></div>
       <label class="pp-cap"><textarea id="ppCap" rows="3" maxlength="300" placeholder="เขียนแคปชั่น… วันนี้รู้สึกยังไงบ้าง?"></textarea></label>
       <div class="pp-row"><b>การมองเห็น</b>
         <div class="pp-vis" id="ppVis"><button data-v="pub" class="on">${T2.ic.globe}สาธารณะ</button><button data-v="fr">${T2.ic.ppl}เพื่อน</button><button data-v="me">${T2.ic.lock}เฉพาะฉัน</button></div></div>
       <button class="pp-save press" id="ppSave">บันทึก</button>
     </div>`;
-  const cv = $('#ppCv', pg), cx = cv.getContext('2d');
+  const cv = $('#ppCv', pg), out = cv.getContext('2d');
+  const bcv = document.createElement('canvas'); bcv.width = 1080; bcv.height = 1350; const cx = bcv.getContext('2d');   // base layer, redrawn only when the photo / style changes
   const img = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
   let A = {};
   const load = async () => {
-    const [map, mark, coin, eliA] = await Promise.all([img('assets/r_map.webp'), img('assets/logo_mark.png'), img('assets/c3_face.png'), img(spr('cheer1'))]);
-    A = { map, mark, coin, eliA }; draw();
+    const [map, mark, coin, ...stk] = await Promise.all([img('assets/r_map.webp'), img('assets/logo_mark.png'), img('assets/c3_face.png'), ...STK.map(([f]) => img(`assets/${f}.webp`))]);
+    A = { map, mark, coin, stk: stk.map(im => im && outline(im)) }; draw(); buildStk();
   };
   const cover = (im, x, y, w, h) => { const k = Math.max(w / im.width, h / im.height), iw = im.width * k, ih = im.height * k; cx.drawImage(im, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih); };
   const tint = (im, col, w) => { const c = document.createElement('canvas'), h = w * im.height / im.width; c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(im, 0, 0, w, h); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, w, h); return c; };
   const rr = (x, y, w, h, r) => { cx.beginPath(); cx.roundRect(x, y, w, h, r); };
-  const draw = () => {
+  const outline = im => {   // die-cut sticker look: a white border + soft shadow around the original drawing (the drawing itself is untouched)
+    const w = 640, h = Math.round(w * im.height / im.width), pd = 34, c = document.createElement('canvas'); c.width = w + pd * 2; c.height = h + pd * 2;
+    const g = c.getContext('2d'), sil = tint(im, '#fff', w);
+    g.shadowColor = 'rgba(20,30,60,.28)'; g.shadowBlur = 18; g.shadowOffsetY = 8; g.drawImage(sil, pd, pd); g.shadowColor = 'transparent';
+    for (let a = 0; a < 24; a++) g.drawImage(sil, pd + Math.cos(a / 24 * 2 * Math.PI) * 14, pd + Math.sin(a / 24 * 2 * Math.PI) * 14);
+    g.drawImage(im, pd, pd, w, h); return c;
+  };
+  const sH = st => { const im = A.stk && A.stk[st.k]; return im ? st.s * im.height / im.width : st.s; };
+  const paint = () => {   // the visible picture = base + ELi stickers (what is saved / shared)
+    out.clearRect(0, 0, 1080, 1350); out.drawImage(bcv, 0, 0);
+    P.stk.forEach(st => { const im = A.stk && A.stk[st.k]; if (im) out.drawImage(im, st.x - st.s / 2, st.y - sH(st) / 2, st.s, sH(st)); });
+    placeStk();
+  };
+  const draw = () => { drawBase(); paint(); };
+  const drawBase = () => {
     const W = 1080, Hh = 1350, F = '"Comfortaa","Noto Sans Thai",sans-serif';
     cx.clearRect(0, 0, W, Hh);
     if (P.photo) cover(P.photo, 0, 0, W, Hh);
@@ -194,28 +216,80 @@ LIFE.trekdone = pg => {
     const wm = st === 'gold' ? '#F6C343' : (light ? '#2A3B9C' : '#fff');
     if (A.mark) { const m = tint(A.mark, wm, 110); cx.globalAlpha = .95; cx.drawImage(m, 60, 56); cx.globalAlpha = 1; }
     cx.fillStyle = wm; cx.font = `700 34px ${F}`; cx.fillText("eli's world", 186, 120);
-    const kmS = km.toFixed(2), t = clock(sec), v = spd.toFixed(1);
+    const kmS = km.toFixed(2), t = clock(sec), v = pc;
     if (st === 'sticker') {
       rr(60, Hh - 400, W - 120, 330, 60); cx.fillStyle = '#fff'; cx.shadowColor = 'rgba(20,30,60,.25)'; cx.shadowBlur = 30; cx.fill(); cx.shadowBlur = 0;
       cx.lineWidth = 10; cx.strokeStyle = '#fff'; cx.stroke();
       cx.fillStyle = '#2A3B9C'; cx.font = `700 150px ${F}`; cx.fillText(kmS, 110, Hh - 215); const kw = cx.measureText(kmS).width;
       cx.font = `700 52px ${F}`; cx.fillText('กม.', 130 + kw, Hh - 215);
-      cx.fillStyle = '#5C5651'; cx.font = `700 44px ${F}`; cx.fillText(`${t}   ·   ${v} กม./ชม.   ·   ♥ ${hr}`, 112, Hh - 130);
-      if (A.eliA) { const s = 330; cx.drawImage(A.eliA, W - s - 40, Hh - 400 - s * .78, s, s); }
+      cx.fillStyle = '#5C5651'; cx.font = `700 44px ${F}`; cx.fillText(`${t}   ·   ${v} /กม.   ·   ♥ ${hr}`, 112, Hh - 130);
       if (A.coin) cx.drawImage(A.coin, W - 190, Hh - 210, 110, 110);
     } else if (st === 'classic' || st === 'gold') {
       const c = st === 'gold' ? '#F6C343' : '#fff';
       cx.fillStyle = c; cx.font = `700 190px ${F}`; cx.fillText(kmS, 80, Hh - 250); const kw = cx.measureText(kmS).width;
       cx.font = `700 64px ${F}`; cx.fillText('กม.', 100 + kw, Hh - 250);
       cx.font = `700 50px ${F}`; cx.fillStyle = st === 'gold' ? '#FFE9A8' : 'rgba(255,255,255,.92)';
-      [[t, 'เวลา'], [v, 'กม./ชม.'], [String(hr), '♥ เฉลี่ย']].forEach(([a, b], i) => { cx.font = `700 60px ${F}`; cx.fillText(a, 84 + i * 330, Hh - 140); cx.font = `600 34px ${F}`; cx.fillText(b, 86 + i * 330, Hh - 86); });
+      [[t, 'เวลา'], [v, 'เพซ /กม.'], [String(hr), '♥ เฉลี่ย']].forEach(([a, b], i) => { cx.font = `700 60px ${F}`; cx.fillText(a, 84 + i * 330, Hh - 140); cx.font = `600 34px ${F}`; cx.fillText(b, 86 + i * 330, Hh - 86); });
     } else {   // minimal
       const c = light ? '#2A3B9C' : '#fff';
       cx.fillStyle = c; cx.textAlign = 'center'; cx.font = `700 230px ${F}`; cx.fillText(kmS, W / 2, Hh / 2 + 60);
       cx.font = `700 60px ${F}`; cx.fillText('กิโลเมตร', W / 2, Hh / 2 + 150);
-      cx.font = `600 42px ${F}`; cx.fillText(`${t} · ${v} กม./ชม. · ♥ ${hr}`, W / 2, Hh / 2 + 230); cx.textAlign = 'left';
+      cx.font = `600 42px ${F}`; cx.fillText(`${t} · ${v} /กม. · ♥ ${hr}`, W / 2, Hh / 2 + 230); cx.textAlign = 'left';
     }
   };
+  /* ── sticker editing: DOM boxes over the canvas only catch the finger and show the frame; the canvas draws the sticker ── */
+  const lay = $('#ppStk', pg), sz = $('#ppSz', pg), szT = $('#ppSzT', pg), MAXS = 6;
+  const kk = () => cv.clientWidth / 1080 || 1;
+  const buildStk = () => {
+    lay.innerHTML = P.stk.map((st, i) => `<div class="stk ${i === P.sel ? 'on' : ''}" data-i="${i}"><button class="del" aria-label="เอาสติกเกอร์ออก">✕</button><i class="rz" aria-hidden="true"></i></div>`).join('');
+    placeStk(); syncSize();
+  };
+  const placeStk = () => {
+    const k = kk();
+    $$('.stk', lay).forEach(b => { const st = P.stk[b.dataset.i]; if (!st) return; const w = st.s * k, h = sH(st) * k; Object.assign(b.style, { left: st.x * k - w / 2 + 'px', top: st.y * k - h / 2 + 'px', width: w + 'px', height: h + 'px' }); });
+  };
+  const syncSize = () => {
+    const st = P.stk[P.sel], on = !!st;
+    $('#ppSize', pg).classList.toggle('off', !on); sz.disabled = !on;
+    if (on) sz.value = st.s; szT.textContent = on ? `${Math.round(st.s / 360 * 100)}%` : (P.stk.length ? 'แตะที่น้องในภาพก่อน' : 'ยังไม่มีน้องในภาพ');
+  };
+  const select = i => { P.sel = i; $$('.stk', lay).forEach(b => b.classList.toggle('on', +b.dataset.i === i)); syncSize(); };
+  let raf = 0;   // one repaint per frame; the timeout covers browsers that pause animation frames (low-power mode, hidden previews)
+  const repaint = () => { if (raf) return; const f = () => { cancelAnimationFrame(raf.a); clearTimeout(raf.t); raf = 0; paint(); syncSize(); }; raf = { a: requestAnimationFrame(f), t: setTimeout(f, 40) }; };
+  const clampSt = st => { st.s = Math.max(140, Math.min(900, st.s)); st.x = Math.max(0, Math.min(1080, st.x)); st.y = Math.max(0, Math.min(1350, st.y)); };
+  // drag = move, the corner handle or two fingers = resize
+  const pts = new Map(); let g0 = null;
+  lay.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.stk'); if (!b || e.target.closest('.del')) return;
+    e.preventDefault(); const i = +b.dataset.i, st = P.stk[i]; if (P.sel !== i) select(i);
+    try { b.setPointerCapture(e.pointerId); } catch (x) {}
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const r = b.getBoundingClientRect(), c = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    if (pts.size === 2) { const [p, q] = [...pts.values()]; g0 = { i, mode: 'pinch', d: Math.hypot(p.x - q.x, p.y - q.y) || 1, s: st.s }; }
+    else if (e.target.closest('.rz')) g0 = { i, mode: 'size', c, d: Math.hypot(e.clientX - c.x, e.clientY - c.y) || 1, s: st.s };
+    else g0 = { i, mode: 'move', px: e.clientX, py: e.clientY, x: st.x, y: st.y };
+  });
+  lay.addEventListener('pointermove', e => {
+    if (!g0 || !pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const st = P.stk[g0.i], k = kk(); if (!st) return;
+    if (g0.mode === 'pinch' && pts.size >= 2) { const [p, q] = [...pts.values()]; st.s = g0.s * Math.hypot(p.x - q.x, p.y - q.y) / g0.d; }
+    else if (g0.mode === 'size') st.s = g0.s * Math.hypot(e.clientX - g0.c.x, e.clientY - g0.c.y) / g0.d;
+    else if (g0.mode === 'move') { st.x = g0.x + (e.clientX - g0.px) / k; st.y = g0.y + (e.clientY - g0.py) / k; }
+    clampSt(st); repaint();
+  });
+  const lift = e => { pts.delete(e.pointerId); if (!pts.size) g0 = null; else if (g0 && g0.mode === 'pinch') { const [p] = [...pts.values()], st = P.stk[g0.i]; g0 = { i: g0.i, mode: 'move', px: p.x, py: p.y, x: st.x, y: st.y }; } };
+  ['pointerup', 'pointercancel'].forEach(n => lay.addEventListener(n, lift));
+  lay.addEventListener('click', e => { const d = e.target.closest('.del'); if (!d) return; P.stk.splice(+d.closest('.stk').dataset.i, 1); P.sel = -1; SFX.pop(); buildStk(); paint(); });
+  $('#ppPic', pg).addEventListener('pointerdown', e => { if (!e.target.closest('.stk,.pp-pick') && P.sel >= 0) select(-1); });
+  sz.addEventListener('input', () => { const st = P.stk[P.sel]; if (!st) return; st.s = +sz.value; clampSt(st); repaint(); });
+  $$('#ppStks button', pg).forEach(b => b.onclick = () => {
+    if (P.stk.length >= MAXS) return toast(`ใส่น้องได้สูงสุด ${MAXS} ตัวต่อภาพนะ`);
+    const n = P.stk.length; P.stk.push({ k: +b.dataset.k, x: 540 + (n % 3 - 1) * 150, y: 560 + (n % 2) * 120, s: 360 });
+    P.sel = P.stk.length - 1; SFX.pop(); buzz(10); buildStk(); paint();
+    $('#ppPic', pg).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  addEventListener('resize', placeStk); cleanup.push(() => removeEventListener('resize', placeStk));
   document.fonts?.ready.then(load); load();
   $('#ppFile', pg).onchange = e => {
     const f = e.target.files[0]; if (!f) return;

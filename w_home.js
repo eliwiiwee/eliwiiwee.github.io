@@ -183,9 +183,13 @@ LIFE.world = pg => {
   // coins in front of / behind ELi depending on who is nearer
   T3.on(() => coins.forEach(c => c.classList.toggle('front', c.y > eli.y)));
   // cards
-  $('#whDq', pg).onclick = () => openSheet(`<h4>Daily Quest ${qDone}/2</h4>
+  // Life Power today (spec): ⌊(S_Walk 40 + S_Sleep 40 + S_App 20) × M_Streak⌋, M = 1 + 0.05 × min(streak, 30)
+  $('#whDq', pg).onclick = () => { const b = base(t), m = LPX.mult(G.streak); openSheet(`<h4>Daily Quest ${qDone}/2</h4>
     <div class="wq-row ${t.steps >= 7000 ? 'ok' : ''}">${wi('w_shoe')}<div><b>Step quest</b><span>เดินครบ 7,000 ก้าว · ตอนนี้ ${fmt(t.steps)}</span></div><em>+1 coin</em></div>
     <div class="wq-row ${t.sleep >= 7 ? 'ok' : ''}">${wi('w_moonz')}<div><b>Sleep recovery quest</b><span>นอน 7–9 ชม. · เมื่อคืน ${t.sleep} ชม.</span></div><em>+1 coin</em></div>
-    <button class="btn btn-d press" data-close>ปิด</button>`);
+    <div class="wq-lp"><div class="h"><b>Life Power วันนี้</b><em>+${fmt(earnedToday())} LP</em></div>
+      <div class="parts"><span><b>${LPX.walk(t.steps)}/40</b>ก้าวเดิน</span><span><b>${LPX.sleep(t.sleep)}/40</b>การนอน</span><span><b>${LPX.app(t)}/20</b>ลูบน้อง + ส่งพลังใจ</span></div>
+      <div class="m">ฐาน ${b}/100 × <span class="fire">🔥 ${G.streak} วัน ×${m.toFixed(2)}</span> เข้าแอปทุกวัน ตัวคูณยิ่งสูง (สูงสุด ×2.5)</div></div>
+    <button class="btn btn-d press" data-close>ปิด</button>`); };
   $('#whAge', pg).onclick = () => openSheet(`<h4>Eli Bio-age ${bio} ปี</h4><p class="wsheet-p">อายุสุขภาพคำนวณจากการเดิน การนอน และการดูแลน้องวันนี้ ${bio < age ? `ตอนนี้ร่างกายคุณ <b>อ่อนกว่าอายุจริง ${age - bio} ปี</b> เยี่ยมมาก!` : bio > age ? `ตอนนี้ <b>มากกว่าอายุจริง ${bio - age} ปี</b> ลองเดินให้ครบและนอนให้พอนะ` : 'เท่ากับอายุจริงพอดี'}<br><br>ท่าทางของน้อง eli จะเปลี่ยนตาม Bio-age: ยิ่งฟิต น้องยิ่งกระโดดโลดเต้น</p><button class="btn btn-d press" data-close>เข้าใจแล้ว</button>`);
 };

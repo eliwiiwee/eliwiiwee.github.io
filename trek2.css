@@ -137,3 +137,26 @@
 @keyframes t2Pop{from{transform:scale(.3);opacity:0}}
 /* the GPS status chip in the Step Trek header: one line, sized to its text */
 .t2 .tk-gps{width:auto;min-width:82px;padding:0 10px 0 9px;white-space:nowrap;justify-content:center;font:600 9.7px var(--f);color:var(--wink);line-height:1}
+/* ELi stickers on the post picture (w_trek2.js): boxes over the canvas catch the finger, the canvas draws the sticker */
+.pp-pick{z-index:3}
+.pp-stk{position:absolute;inset:0;z-index:2;pointer-events:none}
+.pp-stk .stk{position:absolute;pointer-events:auto;touch-action:none;cursor:grab;border-radius:12px}
+.pp-stk .stk.on{outline:2.5px dashed #fff;outline-offset:-2px;box-shadow:0 0 0 1.5px rgba(30,47,143,.55)}
+.pp-stk .stk:active{cursor:grabbing}
+.pp-stk .del,.pp-stk .rz{position:absolute;display:none;place-items:center;width:30px;height:30px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.pp-stk .stk.on .del,.pp-stk .stk.on .rz{display:grid}
+.pp-stk .del{right:-8px;top:-8px;padding:0;border:2px solid #fff;background:#E8453C;color:#fff;font:800 13px/1 var(--num);cursor:pointer}
+.pp-stk .rz{right:-8px;bottom:-8px;background:#fff;cursor:nwse-resize}
+.pp-stk .rz::before{content:"";width:12px;height:12px;border-right:3px solid #2A3B9C;border-bottom:3px solid #2A3B9C;border-radius:0 0 3px 0}
+.pp-stkbar{margin:12px 0 4px;padding:12px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px #ECE6DE}
+.pp-stkbar .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pp-stkbar .hd b{font:800 13.5px var(--f);color:#1B2357;white-space:nowrap}
+.pp-stkbar .hd span{font:500 11px var(--f);color:#7A746E;text-align:right}
+.pp-stks{display:flex;gap:8px;margin-top:10px}
+.pp-stks button{flex:1;min-width:0;aspect-ratio:1;padding:6px;border:0;border-radius:14px;background:#F4F1EC;box-shadow:0 0 0 1px #ECE6DE;cursor:pointer;transition:transform .15s}
+.pp-stks button img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(20,30,60,.18))}
+.pp-stks button:active{transform:scale(.92)}
+.pp-size{display:flex;align-items:center;gap:10px;margin-top:12px;font:800 12.5px var(--f);color:#1B2357;transition:opacity .2s}
+.pp-size input{flex:1;min-width:0;accent-color:#2A3B9C}
+.pp-size em{flex:none;min-width:44px;font:700 11.5px var(--f);font-style:normal;color:#7A746E;text-align:right}
+.pp-size.off{opacity:.5}

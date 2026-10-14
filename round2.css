@@ -124,3 +124,41 @@
 .tr-ban.sm .tx{top:50%;transform:translateY(-50%)}
 .tr-ban .tx{width:136px}
 .tr-ban span{font-size:10px}
+
+/* Hero Hall · Life Power logic (w_hall2.js): tier ring on every avatar, level chip, pinned Eternal Legend, streak badge, note */
+.av.t-sprout0{--ring:#E4E0D8}.av.t-sprout{--ring:#8FD46E}.av.t-vibrant{--ring:#5EC2F0}.av.t-guardian{--ring:#3A5BDA}.av.t-champion{--ring:#F6B500}.av.t-eternal{--ring:#F6C343}
+.h2-row .av{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ring,#fff),0 2px 5px rgba(0,0,0,.12);cursor:pointer}
+.h2-p .av{box-shadow:0 0 0 3px var(--ring,#fff),0 6px 14px rgba(30,40,120,.25)}
+.h2-p .av.t-champion{box-shadow:0 0 0 3px var(--ring),0 0 16px 2px rgba(246,181,0,.55),0 6px 14px rgba(30,40,120,.25)}
+.h2-p .av.t-eternal{animation:h2LegP 2.4s ease-in-out infinite}
+@keyframes h2LegP{0%,100%{box-shadow:0 0 0 3px #F6C343,0 6px 14px rgba(30,40,120,.25)}50%{box-shadow:0 0 0 3px #FFE08A,0 0 18px 5px rgba(246,195,67,.75),0 6px 14px rgba(30,40,120,.25)}}
+.h2-row .av.t-eternal,.h2-leg .av{animation:h2Leg 2.4s ease-in-out infinite}
+@keyframes h2Leg{0%,100%{box-shadow:0 0 0 2px #fff,0 0 0 4px #F6C343}50%{box-shadow:0 0 0 2px #fff,0 0 0 4px #FFE08A,0 0 12px 4px rgba(246,195,67,.7)}}
+.h2-p.me .nm{background:#2341BC}.h2-p.me .nm b,.h2-p.me .nm span{color:#fff}
+.h2-row .mid b{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.h2-row .mid .nmx{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lvc{flex:none;height:16px;padding:0 6px;border-radius:8px;display:inline-grid;place-items:center;font:800 10px/1 var(--num);color:#fff;background:#9AA3B8}
+.lvc.t-sprout{background:#5FB648}.lvc.t-vibrant{background:#2FA4DB}.lvc.t-guardian{background:#3A5BDA}.lvc.t-champion{background:#E9A31A}.lvc.t-eternal{background:linear-gradient(90deg,#F6C343,#F28C28)}
+.h2-row.me .lvc{box-shadow:0 0 0 1.5px #fff}
+.h2-row .you{display:flex;align-items:center;gap:3px;white-space:nowrap}
+.h2-row .you small{font:800 10px var(--num);opacity:.8}
+.h2-row.away{opacity:.62}.h2-row.away .av img{filter:grayscale(.85)}
+.h2-leg{display:flex;align-items:center;gap:8px;height:54px;margin-top:6px;padding:0 10px;border-radius:16px;background:linear-gradient(90deg,#FFF6D8,#FFE9B8);box-shadow:0 0 0 1.5px #F6C343;cursor:pointer;animation:rise .4s var(--ease) both}
+.h2-leg .av{flex:none;width:38px;height:38px;border-radius:50%;overflow:hidden}
+.h2-leg .av img,.h2-row .av img{width:100%;height:100%;object-fit:cover}
+.h2-leg .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.h2-leg .mid b{font:800 13px var(--f);color:#7A4A00}
+.h2-leg .mid small{font:700 10.5px var(--f);color:#A86A00;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h2-leg .lp{flex:none;text-align:right;font:800 14px/1.1 var(--num);color:#7A4A00}
+.h2-leg .lp small{display:block;font:700 9.5px var(--num);opacity:.8}
+.h2-note{margin:10px 6px 2px;font:500 11.5px/1.55 var(--f);color:#7A746E;text-align:center}
+/* Daily Quest sheet: today's Life Power = base × streak multiplier */
+.wq-lp{margin:4px 0 12px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,#F4F6FF,#E9ECFA);box-shadow:0 0 0 1px #DDE2F7}
+.wq-lp .h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wq-lp .h b{font:800 14px var(--f);color:var(--wink)}
+.wq-lp .h em{font:800 16px var(--num);font-style:normal;color:var(--wi)}
+.wq-lp .parts{display:flex;gap:6px;margin:8px 0}
+.wq-lp .parts span{flex:1;padding:6px 4px;border-radius:10px;background:#fff;text-align:center;font:600 10.5px/1.35 var(--f);color:var(--wmut)}
+.wq-lp .parts span b{display:block;font:800 14px var(--num);color:var(--wink)}
+.wq-lp .m{font:600 12px/1.5 var(--f);color:var(--wink)}
+.wq-lp .m .fire{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;border-radius:11px;background:#FFE7C2;color:#B25A00;font:800 12px var(--num)}

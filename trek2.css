@@ -135,3 +135,5 @@
 .t2-yay .gain img{width:24px;height:24px}
 .t2-yay .go{position:relative;margin-top:auto;margin-bottom:calc(46px + env(safe-area-inset-bottom,0px));height:58px;padding:0 44px;border:0;border-radius:29px;background:#F6C343;color:#2A2150;font:800 17px var(--f);box-shadow:0 5px 0 #C98F14,0 12px 24px rgba(0,0,0,.3);animation:rise .5s var(--ease) both .9s}
 @keyframes t2Pop{from{transform:scale(.3);opacity:0}}
+/* the GPS status chip in the Step Trek header: one line, sized to its text */
+.t2 .tk-gps{width:auto;min-width:82px;padding:0 10px 0 9px;white-space:nowrap;justify-content:center;font:600 9.7px var(--f);color:var(--wink);line-height:1}

@@ -37,7 +37,7 @@ LIFE.welcome = pg => {
 const spk = (pos, rot = 0, n = 3, col = '#F6C343') => `<svg class="hd-spk" style="${pos};transform:rotate(${rot}deg)" viewBox="0 0 24 24"><g fill="none" stroke-linecap="round"><path stroke="#fff" stroke-width="7.6" d="${n === 2 ? 'M8 4 9.5 11M16 6 13.5 12' : 'M5 7 8.5 12M12 3v7M19 7l-3.5 5'}"/><path stroke="${col}" stroke-width="4.3" d="${n === 2 ? 'M8 4 9.5 11M16 6 13.5 12' : 'M5 7 8.5 12M12 3v7M19 7l-3.5 5'}"/></g></svg>`;
 function hdFit(root) {
   $$('[data-fw]', root).forEach(el => {
-    const fw = +el.dataset.fw, r = document.createRange(); let lo = 4, hi = 40;
+    const fw = +el.dataset.fw, r = document.createRange(); let lo = 4, hi = +el.dataset.fmax || 40;
     r.selectNodeContents(el);
     const w = () => { const b = el.getBoundingClientRect(); return b.width ? r.getBoundingClientRect().width * el.offsetWidth / b.width : 0; };   // content width in layout px (the app may be scaled)
     for (let i = 0; i < 14; i++) { const m = (lo + hi) / 2; el.style.fontSize = m + 'px'; if (w() > fw) hi = m; else lo = m; }
@@ -60,8 +60,8 @@ LIFE.world = pg => {
     <button class="hd-card hd-me press" id="whId" data-go="settings" aria-label="โปรไฟล์และการตั้งค่า" style="${at(150, 102, 492, 236)}"></button>
     <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""></i>
     <img class="hd-ic hd-avg" src="assets/hd_gear.png" style="${at(186, 186, 246, 246)}" alt="">
-    ${tx(at(250, 118, 367, 154), 117, 'nm', G.citizen.name)}
-    ${tx(at(250, 160, 339, 178), 89, 'cid', 'ID ' + G.citizen.id)}
+    ${tx(at(250, 114, 432, 150), 182, 'nm', G.citizen.name)}
+    ${tx(at(250, 162, 432, 180), 182, 'cid', 'ID ' + G.citizen.id)}
     ${tx(at(239, 189, 300, 215), 61, 'lv', 'Lv.' + L)}
     <i class="hd-bar" style="${at(311, 194, 473, 216)}"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i>
     <img class="hd-ic" src="assets/hd_leaf.png" style="${at(436, 82, 502, 150)}" alt="">
@@ -72,8 +72,8 @@ LIFE.world = pg => {
     ${spk(at(714, 118, 754, 170), -70, 2)}
     <button class="hd-card hd-age press" id="whAge" style="${at(537, 250, 960, 395)};--d:.13s"></button>
     <i class="hd-pill green" style="${at(552, 264, 818, 381)}"></i><i class="hd-dv" style="${at(830, 284, 833, 362)}"></i>
-    ${tx(at(574, 272, 744, 298), 150, 'agl bio l', 'Eli Bio-age')}
-    ${tx(at(574, 302, 806, 374), 196, 'agn bio l', `<em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}`)}
+    ${tx(at(574, 266, 744, 291), 150, 'agl bio l', 'Eli Bio-age')}
+    ${tx(at(574, 307, 806, 378), 196, 'agn bio l', `<em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}`)}
     ${tx(at(842, 288, 948, 312), 92, 'agl sm', 'อายุจริง')}
     ${tx(at(842, 318, 948, 356), 78, 'agn sm', `${age}<small>ปี</small>`)}
     ${spk(at(922, 236, 964, 288), 70, 2, '#3DBE57')}
@@ -94,9 +94,15 @@ LIFE.world = pg => {
     <button class="hd-hit" id="whDq" style="${ab(36, 1036, 988, 1098)}" aria-label="Daily Quest"></button>
     <button class="hd-hit" data-go="trek" style="${ab(36, 1098, 988, 1199)}" aria-label="Step quest"></button>
     <button class="hd-hit" data-go="dream" style="${ab(36, 1199, 988, 1306)}" aria-label="Sleep recovery quest"></button>`;
+  // long names: the profile texts may use the whole card width but never grow past the mockup's size
+  [['.hd-t.nm', 12.6], ['.hd-t.cid', 8]].forEach(([q, m]) => { const e = $(q, pg); if (e) e.dataset.fmax = m; });
   hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));
+  // the brand fonts may arrive after the first fit (first visit, slow network) — fit again whenever a font finishes loading
+  const refit = () => cur === 'world' && hdFit(pg);
+  document.fonts?.addEventListener('loadingdone', refit); cleanup.push(() => document.fonts?.removeEventListener('loadingdone', refit));
+  later(500, refit); later(1500, refit);
   // full-screen mode: the top HUD hugs the screen corners (left group → left edge, right group → right edge)
-  [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg')) el.classList.add(el.offsetLeft < 195 ? 'hl' : 'hr'); });
+  [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg')) el.classList.add(el.offsetLeft < 195 ? 'hud-l' : 'hud-r'); });
   bindGo(pg);
   later(250, () => $$('[data-w]', pg).forEach(i => i.style.width = i.dataset.w + '%'));
   // ELi lives on the lawn; mood/pose follows the Bio-age (younger = bouncy, older = tired)

@@ -98,6 +98,7 @@ LIFE.trek = pg => {
   let rec, dust;
   const startRun = () => {
     SFX.levelup(); buzz([20, 30, 20]);
+    T2.say('เริ่มบันทึก สู้ ๆ นะ');   // spoken inside the tap: iPhone Safari only allows speech that starts from a tap, this unlocks the 1-km announcements
     $('#tabbar').classList.add('hide');
     rec = document.createElement('div'); rec.className = 't2-rec';
     rec.innerHTML = `

@@ -492,7 +492,7 @@ $('#tabbar').innerHTML = TABS.map(([k, l]) => {
   const n = TBSET === '0' ? 'assets/' + { world: 't_planet0', trek: 't_mount', dream: 't_moon', hall: 't_trophy', treasury: 't_chest' }[k] + '.png' : TBSET === 'D' ? `assets/${k === 'trek' ? 'hd_trek2' : 'hd_' + k}.png` : `assets/tb_${TBSET}_${k}.png`;
   return `<button data-go="${k}"${k === 'trek' ? ' class="play"' : ''}><span class="tb-i"><img class="mk" src="${n}" alt=""></span><span class="tb-l"${TBSET === 'D' ? ` data-fw="${{ world: 48.6, dream: 50, trek: 51, hall: 40.8, treasury: 36.6 }[k]}"` : ''}>${l}</span></button>`;
 }).join('') + '<i class="bar"></i>' + (TBSET === 'D' ? spk('left:0;top:1.9px;width:16.4px;height:16.4px', -35) + spk('left:214.5px;top:-4px;width:14px;height:15px', 40, 2) : '');
-if (TBSET === 'D') { hdFit($('#tabbar')); document.fonts?.ready.then(() => hdFit($('#tabbar'))); }
+if (TBSET === 'D') { const f = () => hdFit($('#tabbar')); f(); document.fonts?.ready.then(f); document.fonts?.addEventListener('loadingdone', f); setTimeout(f, 1500); }
 bindGo($('#tabbar'));
 $('#jump').innerHTML = SCREENS.map(([k, l], i) => `<button data-go="${k}"><b>0${i + 1}</b><span>${l}</span></button>`).join('');
 bindGo($('#jump'));
@@ -508,7 +508,7 @@ bindGo($('#jump'));
    wide canvas, so it stays and its absolutely-positioned children are checked in turn. Flow content inside those is left alone. */
 function colTag(box, pg) {
   for (const el of box.children) {
-    if (el.classList.contains('col') || el.classList.contains('hl') || el.classList.contains('hr')) continue;
+    if (el.classList.contains('col') || el.classList.contains('hud-l') || el.classList.contains('hud-r')) continue;
     const abs = /absolute|fixed/.test(getComputedStyle(el).position);
     if (!abs && box !== pg) continue;
     const pr = pg.getBoundingClientRect(), k = pr.width / pg.offsetWidth || 1, er = el.getBoundingClientRect();

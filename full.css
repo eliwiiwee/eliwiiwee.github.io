@@ -8,8 +8,8 @@ body.full #app{border-radius:0}
 body.full .home-ind{display:none}
 #app{--ex:0px;--W:390px}
 .col{translate:var(--ex) 0}
-.pg .hl.hl{translate:clamp(0px, var(--ex), 12px) 0}                              /* home HUD pinned to the left edge of the screen */
-.pg .hr.hr{translate:calc(var(--ex) * 2 - clamp(0px, var(--ex), 12px)) 0}        /* … and to the right edge */
+.pg .hud-l.hud-l{translate:clamp(0px, var(--ex), 12px) 0}                              /* home HUD pinned to the left edge of the screen */
+.pg .hud-r.hud-r{translate:calc(var(--ex) * 2 - clamp(0px, var(--ex), 12px)) 0}        /* … and to the right edge */
 #tabbar{translate:var(--ex) 0}
 #app .sheet,.wl-join .jc{max-width:430px;margin-left:auto;margin-right:auto}
 #app.wide .wl-join .jc{border-radius:26px 26px 0 0}

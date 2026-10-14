@@ -1,0 +1,102 @@
+/* Eli's World — Step Trek, game style B (see w_trek3.js). Indigo #2A3B9C · yellow #F6C343 · orange #F28C28 · red #E8453C */
+.t3 .wbg,.t3-rec .wbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* ── start ── */
+.t3-start{position:absolute;left:0;top:0;width:390px;height:720px;transform-origin:50% 0;z-index:3}
+.t3-title{position:absolute;left:58px;top:54px;width:274px;filter:drop-shadow(0 6px 10px rgba(20,40,120,.25));animation:t3Pop .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes t3Pop{from{transform:scale(.4) rotate(-6deg);opacity:0}}
+.t3-gps{position:absolute;left:32px;top:300px;width:326px;height:206px;border-radius:30px;background:linear-gradient(180deg,#fff,#FAF8F4);text-align:center;
+  box-shadow:0 0 0 1px rgba(226,221,212,.9),0 4px 0 rgba(214,208,198,.6),0 14px 30px rgba(20,40,60,.22);animation:rise .5s var(--ease) both .1s}
+.t3-gps .pin{position:absolute;left:50%;top:-74px;width:150px;margin-left:-75px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18));transition:filter .4s}
+.t3-gps[data-st=perm] .pin{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18)) grayscale(.8)}
+.t3-gps[data-st=search] .pin{animation:t3Bob 1s ease-in-out infinite}
+@keyframes t3Bob{50%{transform:translateY(-6px)}}
+.t3-gps .h{position:absolute;left:0;right:0;top:78px;font:800 24px var(--f);color:#1E2A7E;-webkit-text-stroke:.03em currentColor}
+.t3-gps .row{position:absolute;left:22px;right:22px;top:116px;height:44px;display:flex;gap:8px}
+.t3-gps .st{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:22px;background:#EEF0EC;font:800 15px var(--f);color:#1B2357;transition:background .4s}
+.t3-gps .st .dot{width:18px;height:18px;border-radius:50%;background:#B8B3AC;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.t3-gps .lamp{flex:none;width:58px;border-radius:22px;display:grid;place-items:center;background:#F4F2EE;box-shadow:inset 0 0 0 1px #ECE7DF}
+.t3-gps .lamp i{width:16px;height:16px;border-radius:50%;background:#E3DED6;transition:background .3s,box-shadow .3s}
+.t3-gps[data-st=search] .st{background:#FFF4D2}
+.t3-gps[data-st=search] .st .dot{background:#F6C343;animation:t2Blink 1s ease-in-out infinite}
+.t3-gps[data-st=search] .lamp i{background:#F6C343;box-shadow:0 0 10px 3px rgba(246,195,67,.6)}
+.t3-gps[data-st=ok] .st{background:#E3F5DF}
+.t3-gps[data-st=ok] .st .dot{background:#2FB64A;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15),0 0 0 4px rgba(47,182,74,.18)}
+.t3-gps[data-st=ok] .lamp i{background:#F6C343;opacity:.55}
+.t3-gps .hr{position:absolute;left:28px;right:28px;top:172px;height:1px;background:#E6E1DA}
+.t3-gps .note{position:absolute;left:0;right:0;top:178px;font:600 13px var(--f);color:#6E6A66}
+.t3-allow{position:absolute;left:22px;right:22px;top:116px;height:44px;border:0;border-radius:22px;background:var(--wi);color:#fff;font:800 15px var(--f);box-shadow:0 4px 0 #1A2672}
+.t3-gps:not([data-st=perm]) .t3-allow{display:none}
+.t3-gps[data-st=perm] .row{visibility:hidden}
+.t3-gps[data-st=perm] .note{top:172px}
+.t3-gps[data-st=perm] .hr{display:none}
+.t3-go{position:absolute;left:50%;top:526px;width:200px;margin-left:-100px;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:filter .3s,opacity .3s}
+.t3-go img{width:172px;height:172px;filter:drop-shadow(0 8px 12px rgba(200,120,0,.35));transition:transform .15s}
+.t3-go span{position:relative;z-index:1;margin-top:-22px;height:44px;padding:0 40px;border-radius:22px;display:grid;place-items:center;background:#fff;font:800 20px var(--f);color:#1E2A7E;box-shadow:0 0 0 1px #ECE6DE,0 4px 10px rgba(0,0,0,.15)}
+.t3-go:disabled{filter:grayscale(.75);opacity:.6;cursor:default}
+.t3-go:not(:disabled) img{animation:t2Beat 1.2s ease-in-out infinite}
+.t3-go:active img{transform:scale(.93)}
+/* ── running ── */
+.t3-rec{position:absolute;inset:0;z-index:25;overflow:hidden;opacity:0;transition:opacity .35s}
+.t3-rec.on{opacity:1}
+.t3-speed{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+/* speed streaks rushing past along both edges of the road (thin lines following the perspective) */
+.t3-speed i{position:absolute;top:46%;width:4px;height:120px;margin-left:-2px;border-radius:2px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.9));
+  transform-origin:50% 0;opacity:0;animation:t3Streak .7s linear infinite;animation-delay:var(--d)}
+@keyframes t3Streak{0%{transform:rotate(var(--a)) translateY(-40px) scaleY(.4);opacity:0}25%{opacity:1}100%{transform:rotate(var(--a)) translateY(520px) scaleY(1.4);opacity:0}}
+.t3-rec.paused .t3-speed{opacity:0;transition:opacity .4s}
+.t3-rec.paused .t3-speed i{animation-play-state:paused}
+.t3-dim{position:absolute;inset:0;pointer-events:none;background:rgba(30,32,60,.38);opacity:0;transition:opacity .4s}
+.t3-rec.paused .t3-dim{opacity:1}
+.t3-top{position:absolute;left:0;top:0;width:390px;height:540px;transform-origin:50% 0;z-index:5;pointer-events:none;transition:filter .4s}
+.t3-rec.paused .t3-top{filter:saturate(.35) brightness(.92)}
+.t3-pill{position:absolute;top:52px;height:40px;border-radius:20px;display:flex;align-items:center;gap:8px;background:#fff;font:800 15px var(--f);color:#1B2357;box-shadow:0 0 0 1px #ECE6DE,0 4px 10px rgba(0,0,0,.14)}
+.t3-pill.rec{left:72px;width:184px;justify-content:center}
+.t3-pill.rec .dot{width:14px;height:14px;border-radius:50%;background:#E8453C;box-shadow:0 0 0 3px rgba(232,69,60,.2);animation:t2Blink 1.2s ease-in-out infinite}
+.t3-rec.paused .t3-pill.rec .dot{animation:none}
+.t3-pill.gps{left:288px;width:90px;height:36px;top:54px;justify-content:center;background:#E3F5DF;color:#1E7A33;font-size:14px}
+.t3-pill.gps .bars{display:flex;align-items:flex-end;gap:2px;height:13px}
+.t3-pill.gps .bars i{width:4px;border-radius:1px;background:#2FB64A}
+.t3-pill.gps .bars i:nth-child(1){height:5px}.t3-pill.gps .bars i:nth-child(2){height:9px}.t3-pill.gps .bars i:nth-child(3){height:13px}
+.t3-gauge{position:absolute;left:55px;top:102px;width:280px;height:280px;border-radius:50%;--p:0}
+.t3-gauge .ring{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 215deg,#E8453C 0deg,#F28C28 calc(var(--p) * 150deg),#F6C343 calc(var(--p) * 290deg),#E4E1DC calc(var(--p) * 290deg) 290deg,transparent 290deg);
+  -webkit-mask:radial-gradient(farthest-side,transparent 74%,#000 75% 99%,transparent 100%),repeating-conic-gradient(from 215deg,#000 0 10.5deg,transparent 10.5deg 12.08deg);-webkit-mask-composite:source-in;
+  mask:radial-gradient(farthest-side,transparent 74%,#000 75% 99%,transparent 100%) intersect,repeating-conic-gradient(from 215deg,#000 0 10.5deg,transparent 10.5deg 12.08deg);
+  filter:drop-shadow(0 0 1px rgba(0,0,0,.15));transition:background .5s}
+.t3-gauge::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:#fff;
+  -webkit-mask:conic-gradient(from 215deg,#000 0 290deg,transparent 290deg);mask:conic-gradient(from 215deg,#000 0 290deg,transparent 290deg);box-shadow:0 10px 24px rgba(20,40,60,.25)}
+.t3-gauge .in{position:absolute;inset:44px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#fff,#F6F4F0);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 0 0 6px #fff,0 6px 16px rgba(20,40,60,.18)}
+.t3-gauge .in b{font:700 70px/1 var(--num);color:#1E2A7E;-webkit-text-stroke:.035em currentColor;letter-spacing:-.02em}
+.t3-gauge .in span{margin-top:6px;font:800 19px var(--f);color:#1E2A7E}
+.t3-gauge.lap .in{animation:t3Lap .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes t3Lap{40%{transform:scale(1.08)}}
+.t3-chip{position:absolute;top:388px;height:76px;border-radius:22px;background:#fff;box-shadow:0 0 0 1px #ECE6DE,0 4px 0 rgba(214,208,198,.6),0 10px 20px rgba(20,40,60,.18)}
+.t3-chip.l{left:13px;width:177px}.t3-chip.r{left:200px;width:182px}
+.t3-chip img{position:absolute;left:10px;top:13px;width:50px;height:50px;object-fit:contain}
+.t3-chip span{position:absolute;left:64px;top:11px;font:700 13px var(--f);color:#1E2A7E;white-space:nowrap}
+.t3-chip b{position:absolute;left:64px;top:30px;font:700 30px/1.1 var(--num);color:#1B2357;-webkit-text-stroke:.03em currentColor;white-space:nowrap}
+.t3-chip.r b{font-size:27px}
+.t3-chip b em{font-style:normal}
+.t3-chip b small{font:700 12px var(--f);-webkit-text-stroke:0}
+.t3-toast{position:absolute;left:58px;top:478px;width:274px;height:52px;border-radius:26px;display:flex;align-items:center;gap:6px;padding-left:66px;
+  background:linear-gradient(180deg,#FFF9E6,#FFEFC2);box-shadow:0 0 0 2px #fff,0 6px 14px rgba(200,140,0,.3);opacity:0;transform:scale(.5);pointer-events:none}
+.t3-toast img{position:absolute;left:-8px;top:50%;width:66px;height:66px;margin-top:-33px;filter:drop-shadow(0 3px 4px rgba(150,90,0,.3))}
+.t3-toast b{font:800 21px var(--f);color:#1E2A7E}
+.t3-toast.on{animation:t3Toast 3.2s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes t3Toast{0%{opacity:0;transform:scale(.5)}10%,82%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9) translateY(-10px)}}
+.t3-ring{position:absolute;left:95px;width:200px;height:52px;margin-top:-26px;border-radius:50%;z-index:2;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,236,150,.0) 55%,rgba(255,214,90,.95) 70%,rgba(255,214,90,0) 100%);filter:blur(.5px);animation:t3Glow 1.6s ease-in-out infinite}
+.t3-ring::after{content:"";position:absolute;left:30%;right:30%;bottom:50%;height:110px;background:radial-gradient(closest-side,rgba(255,230,140,.55),transparent);filter:blur(6px)}
+@keyframes t3Glow{50%{opacity:.6;transform:scale(1.06)}}
+.t3-rec .eli-m{z-index:3}
+.t3-btns{position:absolute;left:0;width:390px;bottom:calc(30px + env(safe-area-inset-bottom,0px));height:190px;z-index:4}
+.t3-b{position:absolute;bottom:0;width:170px;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.t3-b img{width:138px;height:138px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.28));transition:transform .15s}
+.t3-b span{position:relative;z-index:1;margin-top:-18px;height:40px;padding:0 20px;border-radius:20px;display:grid;place-items:center;background:#fff;font:800 16px var(--f);color:#1E2A7E;white-space:nowrap;box-shadow:0 0 0 1px #ECE6DE,0 4px 10px rgba(0,0,0,.18)}
+.t3-b:active img{transform:scale(.92) translateY(3px)}
+.t3-b.pause{left:110px}
+.t3-b.res{left:22px;display:none}.t3-b.fin{left:198px;display:none}
+.t3-rec.paused .t3-b.pause{display:none}
+.t3-rec.paused .t3-b.res,.t3-rec.paused .t3-b.fin{display:flex;animation:rise .35s var(--spring) both}
+.t3-rec.paused .t3-b.fin{animation-delay:.06s}

@@ -45,11 +45,11 @@ const KUDO = {};
 const ME = { weekKm: 18.7, weekSec: 8460, weekElev: 142, week: [5.2, 0, 4.1, 3.1, 0, 6.3, 0], streak: 5 };
 
 /* ── router ── */
-const SCREENS = [['welcome', 'หน้าต้อนรับ'], ['world', "Eli's World"], ['settings', 'ตั้งค่า'], ['trek', 'Step Trek'], ['trekdone', 'บันทึกกิจกรรม'], ['dream', 'Dream Land'], ['hall', 'Hero Hall'], ['treasury', 'Treasury'], ['redeem', 'แลกของรางวัล']];
+const SCREENS = [['welcome', 'หน้าต้อนรับ'], ['world', "Eli's World"], ['settings', 'ตั้งค่า'], ['trek', 'Step Trek'], ['trekdone', 'บันทึกกิจกรรม'], ['farm', 'สวนผักน้อง eli'], ['erun', 'ELi Run'], ['dream', 'Dream Land'], ['hall', 'Hero Hall'], ['treasury', 'Treasury'], ['redeem', 'แลกของรางวัล']];
 const TABS = [['world', "Eli's World"], ['dream', 'Dream Land'], ['trek', 'Step Trek'], ['hall', 'Hero Hall'], ['treasury', 'Treasury']];   // Step Trek = the big "play" button in the middle
 const TB_DEFAULT = 'D';
 const WITH_TABS = ['world', 'trek', 'dream', 'hall', 'treasury'];
-const ORDER = ['welcome', 'world', 'settings', 'trek', 'trekdone', 'dream', 'hall', 'treasury', 'redeem'];
+const ORDER = ['welcome', 'world', 'settings', 'farm', 'erun', 'trek', 'trekdone', 'dream', 'hall', 'treasury', 'redeem'];
 let cur = null, cleanup = [], curAct = FEED[0];
 const view = $('#view');
 

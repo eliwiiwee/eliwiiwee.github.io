@@ -94,6 +94,9 @@ LIFE.world = pg => {
     <button class="hd-hit" id="whDq" style="${ab(36, 1036, 988, 1098)}" aria-label="Daily Quest"></button>
     <button class="hd-hit" data-go="trek" style="${ab(36, 1098, 988, 1199)}" aria-label="Step quest"></button>
     <button class="hd-hit" data-go="dream" style="${ab(36, 1199, 988, 1306)}" aria-label="Sleep recovery quest"></button>`;
+  // the way into the mini-game สวนผักน้อง eli: a signpost on the lawn
+  { const [fx, fy] = coverPt(150, 1000); pg.insertAdjacentHTML('beforeend', `<button class="wh-farm press" data-go="farm" style="left:${Math.max(40, fx).toFixed(1)}px;top:${Math.min(H - 205, fy).toFixed(1)}px" aria-label="สวนผักน้อง eli"><img src="assets/fi_sign.png" alt=""><span>สวนผัก</span></button>`) }
+  { const [rx, ry] = coverPt(880, 1000); pg.insertAdjacentHTML('beforeend', `<button class="wh-run press" data-go="erun" style="left:${Math.min(350, rx).toFixed(1)}px;top:${Math.min(H - 205, ry).toFixed(1)}px" aria-label="ELi Run"><img src="assets/rn_entry.png" alt=""><span>ELi Run</span></button>`); }
   // long names: the profile texts may use the whole card width but never grow past the mockup's size
   [['.hd-t.nm', 12.6], ['.hd-t.cid', 8]].forEach(([q, m]) => { const e = $(q, pg); if (e) e.dataset.fmax = m; });
   hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));

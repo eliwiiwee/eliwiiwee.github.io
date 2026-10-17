@@ -57,26 +57,19 @@ LIFE.world = pg => {
   const ab = (x0, y0, x1, y1) => `left:${(x0 * K).toFixed(1)}px;top:${(H - (1536 - y0) * K).toFixed(1)}px;width:${((x1 - x0) * K).toFixed(1)}px;height:${((y1 - y0) * K).toFixed(1)}px`;
   const tx = (pos, fw, cls, html, id = '') => `<span class="hd-t ${cls}" ${id ? `id="${id}"` : ''} data-fw="${(fw * K).toFixed(1)}" style="${pos}">${html}</span>`;
   pg.innerHTML = `<img class="wbg" src="assets/hdD_bg.webp" alt="">
-    <button class="hd-card hd-me press" id="whId" data-go="settings" aria-label="โปรไฟล์และการตั้งค่า" style="${at(150, 102, 492, 236)}"></button>
-    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""></i>
-    <img class="hd-ic hd-avg" src="assets/hd_gear.png" style="${at(186, 186, 246, 246)}" alt="">
-    ${tx(at(250, 114, 432, 150), 182, 'nm', G.citizen.name)}
-    ${tx(at(250, 162, 432, 180), 182, 'cid', 'ID ' + G.citizen.id)}
-    ${tx(at(239, 189, 300, 215), 61, 'lv', 'Lv.' + L)}
-    <i class="hd-bar" style="${at(311, 194, 473, 216)}"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i>
-    <img class="hd-ic" src="assets/hd_leaf.png" style="${at(436, 82, 502, 150)}" alt="">
+    <button class="hd-card hd-me press" id="whId" data-go="settings" aria-label="โปรไฟล์และการตั้งค่า" style="${at(150, 102, 492, 236)}">
+      <span class="tx"><b class="nm" data-fw="${((492 - 150) * K - 59).toFixed(1)}" data-fmax="13">${G.citizen.name}</b><span class="cid">ID ${G.citizen.id}</span>
+      <span class="lvr"><b class="lv">Lv.${L}</b><i class="hd-bar"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i></span></span></button>
+    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""><img class="gear" src="assets/hd_gear.png" alt=""></i>
+    <img class="hd-ic hd-leaf" src="assets/hd_leaf.png" style="${at(452, 62, 510, 120)}" alt="">
     ${spk(at(45, 58, 98, 108), -30)}
-    <button class="hd-card hd-coin coinchip2 press" style="${at(738, 115, 960, 212)};--d:.05s" data-go="treasury"></button>
-    <img class="hd-ic" src="assets/hd_coin.png" style="${at(750, 122, 833, 205)}" alt="">
-    ${tx(at(840, 140, 940, 178), 100, 'coin', `<b data-coins>${wcoins()}</b>`)}
+    <button class="hd-card hd-coin coinchip2 press" style="${at(738, 115, 960, 212)};--d:.05s" data-go="treasury"><img src="assets/hd_coin.png" alt=""><b data-coins>${wcoins()}</b></button>
     ${spk(at(714, 118, 754, 170), -70, 2)}
-    <button class="hd-card hd-age press" id="whAge" style="${at(537, 250, 960, 395)};--d:.13s"></button>
-    <i class="hd-pill green" style="${at(552, 264, 818, 381)}"></i><i class="hd-dv" style="${at(830, 284, 833, 362)}"></i>
-    ${tx(at(574, 266, 744, 291), 150, 'agl bio l', 'Eli Bio-age')}
-    ${tx(at(574, 307, 806, 378), 196, 'agn bio l', `<em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}`)}
-    ${tx(at(842, 288, 948, 312), 92, 'agl sm', 'อายุจริง')}
-    ${tx(at(842, 318, 948, 356), 78, 'agn sm', `${age}<small>ปี</small>`)}
-    ${spk(at(922, 236, 964, 288), 70, 2, '#3DBE57')}
+    <button class="hd-card hd-age hud-c press" id="whAge" style="${at(301, 288, 724, 433)};--d:.13s">
+      <span class="bio"><span class="lb">Eli Bio-age</span><span class="vv"><em id="whBio">${bio}</em><small>ปี</small>${bio < age ? '<i class="tri"></i>' : ''}</span></span>
+      <i class="sep"></i>
+      <span class="real"><span class="lb">อายุจริง</span><span class="vv"><b>${age}</b><small>ปี</small></span></span></button>
+    ${spk(at(706, 272, 748, 324), 70, 2, '#3DBE57').replace('class="hd-spk"', 'class="hd-spk hud-c"')}
     <div class="hd-card hd-dqp" style="${ab(36, 1036, 988, 1306)}"></div>
     <img class="hd-ic" src="assets/hd_dq.png" style="${ab(26, 990, 150, 1100)}" alt="">
     ${spk(ab(126, 994, 166, 1036), 25, 2)}
@@ -98,20 +91,19 @@ LIFE.world = pg => {
   { const [fx, fy] = coverPt(150, 1000); pg.insertAdjacentHTML('beforeend', `<button class="wh-farm press" data-go="farm" style="left:${Math.max(40, fx).toFixed(1)}px;top:${Math.min(H - 205, fy).toFixed(1)}px" aria-label="สวนผักน้อง eli"><img src="assets/fi_sign.png" alt=""><span>สวนผัก</span></button>`) }
   { const [rx, ry] = coverPt(880, 1000); pg.insertAdjacentHTML('beforeend', `<button class="wh-run press" data-go="erun" style="left:${Math.min(350, rx).toFixed(1)}px;top:${Math.min(H - 205, ry).toFixed(1)}px" aria-label="ELi Run"><img src="assets/rn_entry.png" alt=""><span>ELi Run</span></button>`); }
   // long names: the profile texts may use the whole card width but never grow past the mockup's size
-  [['.hd-t.nm', 12.6], ['.hd-t.cid', 8]].forEach(([q, m]) => { const e = $(q, pg); if (e) e.dataset.fmax = m; });
   hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));
   // the brand fonts may arrive after the first fit (first visit, slow network) — fit again whenever a font finishes loading
   const refit = () => cur === 'world' && hdFit(pg);
   document.fonts?.addEventListener('loadingdone', refit); cleanup.push(() => document.fonts?.removeEventListener('loadingdone', refit));
   later(500, refit); later(1500, refit);
   // full-screen mode: the top HUD hugs the screen corners (left group → left edge, right group → right edge)
-  [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg')) el.classList.add(el.offsetLeft < 195 ? 'hud-l' : 'hud-r'); });
+  [...pg.children].forEach(el => { if (el.offsetTop < 190 && !el.classList.contains('wbg') && !el.classList.contains('hud-c')) el.classList.add(el.offsetLeft < 195 ? 'hud-l' : 'hud-r'); });
   bindGo(pg);
   later(250, () => $$('[data-w]', pg).forEach(i => i.style.width = i.dataset.w + '%'));
   // ELi lives on the lawn; mood/pose follows the Bio-age (younger = bouncy, older = tired)
   const mood = bio <= age - 2 ? 'fit' : bio >= age + 2 ? 'tired' : 'ok';
   const [cx, cy] = coverPt(520, 900);
-  const top = 175, bottom = appH - 200;          // free band between the top HUD and the Daily Quest panel
+  const top = 196, bottom = appH - 200;          // free band between the top HUD and the Daily Quest panel
   const esz = Math.round(Math.max(100, Math.min(158, (bottom - top) * .74)));   // short phones (browser bars showing) → a smaller ELi
   const fy = Math.max(top + esz, Math.min(bottom, cy));
   pg.insertAdjacentHTML('beforeend', `<i class="wh-glow" style="left:${cx}px;top:${fy}px"></i>`);

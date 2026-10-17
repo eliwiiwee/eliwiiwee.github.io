@@ -567,8 +567,11 @@ const checkBuild = () => {
 checkBuild();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkBuild(); });
 addEventListener('resize', fit); fit();
+addEventListener('load', fit); addEventListener('orientationchange', () => setTimeout(fit, 300)); setTimeout(fit, 500);   // some in-app browsers report the final width late
+// remember me off → the login lasts for this browser session only
+if (G.member && G.remember === false) { let alive = false; try { alive = !!sessionStorage.getItem('eli_sess'); } catch (e) {} if (!alive) { G.member = false; saveG(); } }
 const start = location.hash.slice(1);
 const AWQ = new URLSearchParams(location.search).get('away');   // preview the come-back notification
 if (AWQ) setTimeout(() => awayDemo(AWQ), 1200);
-go(R[start] ? start : 'welcome');
+go(R[start] && (G.member || start === 'welcome') ? start : 'welcome');   // not signed in (or remember me was off) → the welcome page asks to sign in
 addEventListener('hashchange', () => { const h = location.hash.slice(1); if (R[h] && h !== cur) go(h); });

@@ -2,7 +2,7 @@
 // world-specific defaults on top of the Life Power state (G, life.js)
 if (!G.world) {
   Object.assign(G, { coins: 6540, world: 1 });
-  G.citizen = { name: 'สายสุขภาพ', id: '000001', age: 32 };
+  G.citizen = { name: "พลเมือง eli's world", id: '000001', age: 32 };
   G.cart = [];
   G.redeemed = [];
   saveG();
@@ -10,6 +10,7 @@ if (!G.world) {
 G.cart = G.cart || []; G.redeemed = G.redeemed || [];
 // round 2: Eli Citizen ID = 6 digits; profile = photo · username · bio · birthday (→ real age) · gender
 if (!/^\d{6}$/.test(G.citizen.id || '')) G.citizen.id = '000001';
+if (G.citizen.name === 'สายสุขภาพ') G.citizen.name = "พลเมือง eli's world";   // brief 15.10.69: the default name
 if (!G.citizen.birth) { const y = new Date().getFullYear() - (G.citizen.age || 32); G.citizen.birth = `${y}-05-12`; }
 const ageOf = b => { const d = new Date(b), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n.getMonth() < d.getMonth() || (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) a--; return isNaN(a) ? 32 : Math.max(1, a); };
 G.citizen.age = ageOf(G.citizen.birth);

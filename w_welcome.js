@@ -142,20 +142,26 @@ LIFE.welcome = pg => {
         <button class="jb t sm" type="button" data-v="2">หรือ เข้าสู่ระบบด้วยอีเมล</button>
       </div>
       <form class="v v1" autocomplete="off">
-        <b class="h">สมัครด้วยอีเมล</b>
-        <label class="jf"><span>ชื่อเล่น</span><input name="n" placeholder="เช่น สายสุขภาพ"></label>
-        <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="you@email.com"></label>
-        <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="อย่างน้อย 6 ตัว"></label>
+        <div class="jhd"><button class="jback" type="button" data-v="2">‹ ย้อนกลับ</button><b class="h">สมัครด้วยอีเมล</b></div>
+        <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="your email" autocomplete="email"></label>
+        <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="Password (อย่างน้อย 6 ตัว)" autocomplete="new-password"></label>
+        <div class="jrow"><label class="jrem"><input type="checkbox" name="r" checked><i></i>จดจำฉันไว้</label></div>
         <button class="jb p press" type="submit">สร้างบัญชี</button>
-        <button class="jb t" type="button" data-v="2">‹ มีบัญชีแล้ว เข้าสู่ระบบ</button>
+        <button class="jb t" type="button" data-v="2">มีบัญชีแล้ว? เข้าสู่ระบบ</button>
       </form>
       <form class="v v2" autocomplete="off">
-        <b class="h">เข้าสู่ระบบด้วยอีเมล</b>
-        <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="you@email.com"></label>
-        <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="รหัสผ่าน"></label>
+        <div class="jhd"><button class="jback" type="button" data-v="0">‹ ย้อนกลับ</button><b class="h">เข้าสู่ระบบด้วยอีเมล</b></div>
+        <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="your email" autocomplete="email"></label>
+        <label class="jf"><span>รหัสผ่าน</span><input name="p" type="password" placeholder="Password" autocomplete="current-password"></label>
+        <div class="jrow"><label class="jrem"><input type="checkbox" name="r" checked><i></i>จดจำฉันไว้</label><button class="jforgot" type="button" data-v="3">ลืมรหัสผ่าน?</button></div>
         <button class="jb p press" type="submit">เข้าสู่ระบบ</button>
         <button class="jb t" type="button" data-v="1">ยังไม่มีบัญชี? สมัครด้วยอีเมล</button>
-        <button class="jb t" type="button" data-v="0">‹ ย้อนกลับ</button>
+      </form>
+      <form class="v v3" autocomplete="off">
+        <div class="jhd"><button class="jback" type="button" data-v="2">‹ ย้อนกลับ</button><b class="h">ลืมรหัสผ่าน</b></div>
+        <p class="jp">กรอกอีเมลที่ใช้สมัคร เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้</p>
+        <label class="jf"><span>อีเมล</span><input name="e" type="email" placeholder="your email" autocomplete="email"></label>
+        <button class="jb p press" type="submit">ส่งลิงก์ตั้งรหัสผ่านใหม่</button>
       </form>
     </div></div>`);
   const join = $('#wlJoin', pg);
@@ -187,8 +193,11 @@ LIFE.welcome = pg => {
   $$('[data-v]', join).forEach(b => b.onclick = () => { SFX.pop(); view(+b.dataset.v); });
   // the first login creates the Eli Citizen ID: 6 digits, a running number (on the real backend the server hands it out)
   const newId = () => { let n = 1; try { n = +(localStorage.getItem('eli_cid_seq') || 0) + 1; localStorage.setItem('eli_cid_seq', n); } catch (e) {} return String(n).padStart(6, '0'); };
-  const welcomeIn = (name, isNew = true) => {
+  const welcomeIn = (name, isNew = true, remember = true) => {
     G.member = true; if (name) G.citizen.name = name;
+    if (isNew) G.citizen.setup = false;   // a brand-new account fills in its profile right after the ID card
+    // remember me: off = this browser session only (the app asks to log in again after it is closed)
+    G.remember = remember; try { sessionStorage.setItem('eli_sess', '1'); } catch (e) {}
     if (isNew || !/^\d{6}$/.test(G.citizen.id)) G.citizen.id = newId();
     saveG();
     join.classList.remove('on'); lift();
@@ -198,21 +207,86 @@ LIFE.welcome = pg => {
     SFX.levelup(); buzz([20, 40, 20]); later(500, () => confetti(80));
     eli.pose('cheer1'); eli.jump(50, 500).then(() => eli.pose('cheer6'));
     let gone = false;
-    const go2 = () => { if (gone) return; gone = true; card.classList.remove('on'); eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(195 + appW / 2 + 140, eli.y, 650, 'ease-in'); pg.classList.add('leave'); later(620, () => go('world', { dir: 'none' })); };
+    const toWorld = () => { eli.setFace(1); eli.loop(RUNF, 14); eli.moveTo(195 + appW / 2 + 140, eli.y, 650, 'ease-in'); pg.classList.add('leave'); later(620, () => go('world', { dir: 'none' })); };
+    const go2 = () => { if (gone) return; gone = true; card.classList.remove('on'); later(300, () => card.remove()); if (G.citizen.setup) toWorld(); else later(250, () => openSetup(toWorld)); };
     card.onclick = go2; later(2800, () => cur === 'welcome' && go2());
   };
   const shake = el => el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 300 });
+  const okMail = m => /^\S+@\S+\.\S+$/.test(m);
   $('.v1', join).onsubmit = e => {
-    e.preventDefault(); const f = e.target, n = f.n.value.trim(), m = f.e.value.trim(), p = f.p.value;
-    const bad = !n ? f.n : !/^\S+@\S+\.\S+$/.test(m) ? f.e : p.length < 6 ? f.p : null;
-    if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast(bad === f.p ? 'รหัสผ่านอย่างน้อย 6 ตัวนะ' : bad === f.e ? 'อีเมลยังไม่ถูกต้อง' : 'ตั้งชื่อเล่นก่อนนะ'); }
-    welcomeIn(n);
+    e.preventDefault(); const f = e.target, m = f.e.value.trim(), p = f.p.value;
+    const bad = !okMail(m) ? f.e : p.length < 6 ? f.p : null;
+    if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast(bad === f.p ? 'รหัสผ่านอย่างน้อย 6 ตัวนะ' : 'อีเมลยังไม่ถูกต้อง'); }
+    welcomeIn(null, true, f.r.checked);
   };
   $('.v2', join).onsubmit = e => {
     e.preventDefault(); const f = e.target, m = f.e.value.trim(), p = f.p.value;
-    const bad = !/^\S+@\S+\.\S+$/.test(m) ? f.e : !p ? f.p : null;
+    const bad = !okMail(m) ? f.e : !p ? f.p : null;
     if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast('กรอกอีเมลและรหัสผ่านก่อนนะ'); }
-    welcomeIn(null, false);
+    welcomeIn(null, false, f.r.checked);
+  };
+  $('.v3', join).onsubmit = e => {   // prototype: nothing is sent
+    e.preventDefault(); const f = e.target, m = f.e.value.trim();
+    if (!okMail(m)) { shake(f.e.closest('.jf')); f.e.focus(); return toast('อีเมลยังไม่ถูกต้อง'); }
+    SFX.chime(); toast(`ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ${m} แล้ว`); view(2);
+  };
+  /* profile setup after the first login (brief 15.10.69): one question per page — photo · username · birthday (→ real age) · gender · caption.
+     Save → straight into Eli's World. Everything can be changed later in Settings (tap the profile card). */
+  const openSetup = done => {
+    const C = G.citizen, th = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' }); };
+    let photo = C.photo || null, gender = C.gender || '', step = 0;
+    const N = 5, w = document.createElement('div'); w.className = 'wl-setup';
+    w.innerHTML = `<div class="sc">
+      <div class="top"><button class="bk" type="button" aria-label="ย้อนกลับ">‹</button><div class="dots">${'<i></i>'.repeat(N)}</div><span class="n"></span></div>
+      <div class="steps"><div class="rail">
+        <section><b class="sq">เลือกรูปโปรไฟล์</b><p>รูปนี้จะอยู่บนบัตร Eli Citizen และใน Hero Hall</p>
+          <label class="ph press"><img src="${photo || 'assets/w_avatar.webp'}" alt=""><i class="cam">${T2.ic.photo}</i><input type="file" accept="image/*" hidden></label>
+          <span class="shint">แตะรูปเพื่อเลือกจากเครื่อง</span></section>
+        <section><b class="sq">ชื่อของคุณใน Eli's World</b><p>ชื่อนี้เพื่อน ๆ จะเห็นใน Hero Hall</p>
+          <input class="in" id="suName" maxlength="24" value="${C.name}" placeholder="username"></section>
+        <section><b class="sq">วันเดือนปีเกิด</b><p>ใช้คำนวณอายุจริง เพื่อเทียบกับ Eli Bio-age</p>
+          <input class="in" type="date" id="suBirth" value="${C.birth || ''}" max="${new Date().toISOString().slice(0, 10)}">
+          <div class="age">อายุจริง <b id="suAge">${C.birth ? ageOf(C.birth) : '–'}</b> ปี <small id="suTh">${th(C.birth)}</small></div></section>
+        <section><b class="sq">เพศสภาพ</b><p>เลือกได้ 1 ข้อ</p>
+          <div class="seg"><button type="button" data-g="f" class="${gender === 'f' ? 'on' : ''}">หญิง</button><button type="button" data-g="m" class="${gender === 'm' ? 'on' : ''}">ชาย</button></div></section>
+        <section><b class="sq">แคปชั่นของคุณ</b><p>เล่าเกี่ยวกับตัวเองสั้น ๆ</p>
+          <textarea class="in" id="suBio" rows="3" maxlength="150" placeholder="เช่น สายเดินยามเช้า ☀️">${C.bio || ''}</textarea><em class="cnt" id="suCnt">${(C.bio || '').length}/150</em></section>
+      </div></div>
+      <button class="jb p press nx" type="button">ถัดไป</button></div>`;
+    pg.append(w); later(20, () => w.classList.add('on'));
+    const rail = $('.rail', w), nx = $('.nx', w);
+    const paint = () => {
+      rail.style.transform = `translateX(${-step * 100}%)`;
+      $$('.dots i', w).forEach((d, i) => d.classList.toggle('on', i <= step));
+      $('.n', w).textContent = `${step + 1}/${N}`; $('.bk', w).style.visibility = step ? 'visible' : 'hidden';
+      nx.textContent = step === N - 1 ? 'บันทึก' : 'ถัดไป';
+      const f = $$('section', w)[step].querySelector('.in'); if (f && step) setTimeout(() => f.focus({ preventScroll: true }), 380);
+    };
+    paint();
+    $('input[type=file]', w).onchange = e => {
+      const f = e.target.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => { const im = new Image(); im.onload = () => {
+        const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), z = Math.min(im.width, im.height);
+        g.drawImage(im, (im.width - z) / 2, (im.height - z) / 2, z, z, 0, 0, 256, 256);
+        photo = c.toDataURL('image/jpeg', .85); $('.ph img', w).src = photo; SFX.pop();
+      }; im.src = rd.result; };
+      rd.readAsDataURL(f);
+    };
+    $('#suBirth', w).onchange = e => { $('#suAge', w).textContent = ageOf(e.target.value); $('#suTh', w).textContent = th(e.target.value); };
+    $('#suBio', w).oninput = e => { $('#suCnt', w).textContent = `${e.target.value.length}/150`; };
+    $$('.seg button', w).forEach(b => b.onclick = () => { gender = b.dataset.g; $$('.seg button', w).forEach(x => x.classList.toggle('on', x === b)); SFX.pop(); });
+    $('.bk', w).onclick = () => { if (step) { step--; SFX.pop(); paint(); } };
+    nx.onclick = () => {
+      if (step === 1 && !$('#suName', w).value.trim()) { shake($('#suName', w)); return toast('ตั้งชื่อก่อนนะ'); }
+      if (step === 2 && !$('#suBirth', w).value) { shake($('#suBirth', w)); return toast('เลือกวันเกิดก่อนนะ'); }
+      if (step === 3 && !gender) { shake($('.seg', w)); return toast('เลือกเพศสภาพก่อนนะ'); }
+      if (step < N - 1) { step++; SFX.pop(); buzz(8); return paint(); }
+      const bd = $('#suBirth', w).value;
+      Object.assign(C, { name: $('#suName', w).value.trim(), birth: bd, age: ageOf(bd), gender, bio: $('#suBio', w).value.trim(), photo, setup: true });
+      try { saveG(); } catch (e) { C.photo = null; saveG(); }
+      SFX.levelup(); buzz([20, 30, 20]); w.classList.remove('on'); later(300, () => { w.remove(); done(); });
+    };
   };
   $$('[data-so]', join).forEach(b => b.onclick = () => {
     if (join.classList.contains('busy')) return; join.classList.add('busy'); b.classList.add('wait'); SFX.pop();

@@ -88,3 +88,31 @@
 .hd-bar.q{background:#F1EAE3;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
 .hd-bar.q>i{background:linear-gradient(90deg,#E8453C,#F2763A)}
 .hd-bar.q.done>i{background:linear-gradient(90deg,#F28C28,#F6C343)}
+/* top HUD rebuilt as self-aligning cards (client 18.10: "ดูเบี้ยวๆ") — the boxes keep the mockup position, their content lays itself out */
+.w-world .hd-me{display:flex;align-items:center;padding:0 16px 0 41px;text-align:left;font-family:var(--f)}
+.hd-me .tx{display:flex;flex-direction:column;justify-content:center;min-width:0;width:100%;pointer-events:none}
+.hd-me .nm{display:block;font:800 13px/1.25 "Noto Sans Thai",var(--f);color:#1B2357;white-space:nowrap}
+.hd-me .cid{font:700 8px/1.3 var(--num);color:#717892;letter-spacing:.06em}
+.hd-me .lvr{display:flex;align-items:center;gap:6px;margin-top:3px}
+.hd-me .lv{flex:none;font:700 11.5px/1 var(--num);color:#2C4BC6;-webkit-text-stroke:.04em currentColor}
+.w-world .hd-me .hd-bar{position:relative;flex:1;height:7px}
+.hd-av .gear{position:absolute;left:-5px;bottom:-3px;width:24px;height:24px;border-radius:50%;background:#fff;padding:1px;filter:drop-shadow(0 2px 2px rgba(20,30,60,.2))}
+.hd-leaf{z-index:7}
+.w-world .hd-coin{display:flex;align-items:center;justify-content:center;gap:5px;padding:0 10px 0 4px;font-family:var(--num)}
+.hd-coin img{flex:none;width:31px;height:31px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(150,90,0,.3))}
+.hd-coin b{font:700 15px/1 var(--num);color:#1B2357;-webkit-text-stroke:.045em currentColor;white-space:nowrap}
+.w-world .hd-age{display:flex;align-items:stretch;padding:5px;font-family:var(--f)}
+.hd-age .bio{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 10px;border-radius:13px;background:#E2F2DE}
+.hd-age .lb{display:block;font:800 9.5px/1.2 var(--f);color:#2C4BC6;white-space:nowrap;text-align:left}
+.hd-age .vv{display:flex;align-items:center;gap:3px;line-height:1}
+.hd-age .bio em{font:700 26px/1 var(--num);font-style:normal;color:#2C49C9;-webkit-text-stroke:.04em currentColor}
+.hd-age small{font:700 13px/1 var(--f);color:inherit}
+.hd-age .bio small{color:#2C49C9;margin-top:5px}
+.hd-age .tri{width:0;height:0;margin-left:3px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid #36B44B}
+.hd-age .sep{flex:none;width:1px;margin:7px 0 7px 6px;background:#DDD8D1}
+.hd-age .real{flex:none;width:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.hd-age .real .lb{color:#8A847E;text-align:center}
+.hd-age .real b{font:700 16px/1 var(--num);color:#5C5651}
+.hd-age .real small{font-size:10px;color:#5C5651;margin-top:3px}
+.hd-age .bio{align-items:center}
+.hd-age .bio .lb{text-align:center}

@@ -10,7 +10,7 @@
 .fm-plot[data-st=ripe] .crop{width:78%;bottom:26%;animation:fmRipe 1.4s ease-in-out infinite}
 @keyframes fmSway{50%{transform:translateX(-50%) rotate(2.5deg)}}
 @keyframes fmRipe{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05,.96) translateY(2px)}}
-.fm-plot .tm{position:absolute;left:2%;bottom:-8%;z-index:2;padding:3px 8px;border-radius:11px;background:#fff;font:800 11.5px/1.2 var(--num);color:#1B2357;box-shadow:0 2px 6px rgba(0,0,0,.2);white-space:nowrap;pointer-events:none}
+.fm-plot .tm{position:absolute;left:2%;bottom:0;z-index:2;padding:3px 8px;border-radius:11px;background:#fff;font:800 11.5px/1.2 var(--num);color:#1B2357;box-shadow:0 2px 6px rgba(0,0,0,.2);white-space:nowrap;pointer-events:none}
 .fm-plot .tm:empty{display:none}
 .fm-plot .tm::before{content:"⏱ ";font-size:10px}
 .fm-plot.wet .tm{background:#E5F3FF;color:#1E5FA8}

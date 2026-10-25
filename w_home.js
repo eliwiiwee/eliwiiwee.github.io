@@ -58,9 +58,9 @@ LIFE.world = pg => {
   const tx = (pos, fw, cls, html, id = '') => `<span class="hd-t ${cls}" ${id ? `id="${id}"` : ''} data-fw="${(fw * K).toFixed(1)}" style="${pos}">${html}</span>`;
   pg.innerHTML = `<img class="wbg" src="assets/hdD_bg.webp" alt="">
     <button class="hd-card hd-me press" id="whId" data-go="settings" aria-label="โปรไฟล์และการตั้งค่า" style="${at(150, 102, 492, 236)}">
-      <span class="tx"><b class="nm" data-fw="${((492 - 150) * K - 59).toFixed(1)}" data-fmax="13">${G.citizen.name}</b><span class="cid">ID ${G.citizen.id}</span>
+      <span class="tx"><b class="nm" data-fw="${((492 - 150) * K - 59).toFixed(1)}" data-fmax="13">${esc(G.citizen.name)}</b><span class="cid">ID ${G.citizen.id}</span>
       <span class="lvr"><b class="lv">Lv.${L}</b><i class="hd-bar"><i data-w="${(G.total - lo) / (hi - lo) * 100}"></i></i></span></span></button>
-    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""><img class="gear" src="assets/hd_gear.png" alt=""></i>
+    <i class="hd-av" style="${at(67, 77, 235, 245)}"><img src="${safeImg(G.citizen.photo)}" alt=""><img class="gear" src="assets/hd_gear.png" alt=""></i>
     <img class="hd-ic hd-leaf" src="assets/hd_leaf.png" style="${at(452, 62, 510, 120)}" alt="">
     ${spk(at(45, 58, 98, 108), -30)}
     <button class="hd-card hd-coin coinchip2 press" style="${at(738, 115, 960, 212)};--d:.05s" data-go="treasury"><img src="assets/hd_coin.png" alt=""><b data-coins>${wcoins()}</b></button>
@@ -134,7 +134,7 @@ LIFE.world = pg => {
   hit.addEventListener('pointermove', () => {
     if (!petting) return; const n = performance.now(); acc += Math.min(80, n - last); last = n;
     if (Math.random() < .12) floatUp(pg, eli.x + (Math.random() - .5) * 60, eli.y - 120, '💙', 1);
-    if (acc > 2000 && !G.today.pet) { G.today.pet = true; saveG(); SFX.levelup(); buzz([20, 30, 20]); eli.say('ชาร์จพลังใจเต็มแล้ว! +10 Life Power', 2000); burst(pg, eli.x, eli.y - 90, { n: 16, dist: 70, size: 6 }); $('#whBio', pg).textContent = bioAge(); }
+    if (acc > 2000 && !G.today.pet) { G.today.pet = true; saveG(); if (CLOUD.on) CLOUD.day({ pet: true }); SFX.levelup(); buzz([20, 30, 20]); eli.say('ชาร์จพลังใจเต็มแล้ว! +10 Life Power', 2000); burst(pg, eli.x, eli.y - 90, { n: 16, dist: 70, size: 6 }); $('#whBio', pg).textContent = bioAge(); }
   });
   const up = () => { if (!petting) return; petting = false; eli.pose(rest); eli.squash(.12, 320); acc = Math.max(0, acc - 400); };
   hit.addEventListener('pointerup', up); hit.addEventListener('pointercancel', up); hit.addEventListener('pointerleave', up);
@@ -168,6 +168,7 @@ LIFE.world = pg => {
       popNum(pg, x, y - 44, '+1', 'gold');
       burst(pg, x, y - 30, { n: 16, dist: 60, size: 6, colors: ['#F2C14E', '#FFE59A', '#fff'], shape: 'star' });
       later(380, () => giveCoins(1, 'เก็บเหรียญในสวน', c));   // the coins fly to the counter from the top of the jump
+      if (CLOUD.on) CLOUD.claim('garden').catch(e => toast(e.message));   // the server pays (and keeps the count)
       if (!busy && !petting) { eli.setFace(x < eli.x ? -1 : 1); eli.pose('cheer1'); eli.jump(26, 380).then(() => eli.pose(rest)); }
       if (G.today.c3 >= CAP) eli.say('เก็บครบแล้ววันนี้! พรุ่งนี้มาใหม่นะ', 1800);
       later(800, () => c.remove());

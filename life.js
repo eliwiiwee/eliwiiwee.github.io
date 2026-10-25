@@ -51,7 +51,7 @@ const SFX = {
   levelup() { [523, 659, 784, 1046, 1318].forEach((f, i) => this.tone(f, .22, 'triangle', .05, i * .09)); },
   sad() { this.tone(392, .4, 'sine', .04, 0, .8); },
 };
-const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+const buzz = p => { try { if (window.NATIVE) return NATIVE.buzz(p); navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
 
 /* the character art is never altered: cosmetics are room themes (backgrounds), not outfits drawn on ELi */
@@ -90,7 +90,7 @@ function notify(title, text, img = 'pet5') {
 
 /* award coins with the coin flying into the chip */
 function giveCoins(n, why, fromEl) {
-  G.coins += n; saveG();
+  if (!CLOUD.on) { G.coins += n; saveG(); }   // the app: the server pays, its state repaints the counter
   const chip = $('.coinchip2') || $('.coinchip');
   if (fromEl && chip) flyTo(fromEl, chip, coinIc, Math.min(n, 5), () => { $$('[data-coins]').forEach(e => e.textContent = fmt(G.coins)); chip.classList.remove('hop'); void chip.offsetWidth; chip.classList.add('hop'); });
   else $$('[data-coins]').forEach(e => e.textContent = fmt(G.coins));
@@ -168,6 +168,11 @@ function shieldSheet(lost) {
       <button class="opt2 ${canPotion && G.coins >= 10 ? '' : 'dis'}" id="potion"><b>🧪 ใช้น้ำยาฟื้นฟู</b><span>${canPotion ? `−10 Eli Coins · รักษา Streak ${s.d} วันไว้ (มี ${G.coins})` : 'ใช้ได้เฉพาะหายไปไม่เกิน 3 วัน'}</span></button>
       <button class="opt2" id="halve"><b>✂️ รับ Streak ลดลง</b><span>${s.d} → ${half} วัน (ลดครึ่งต่อวันที่หาย)</span></button>
     </div></div>`, sh => {
+    if (CLOUD.on) {   // the app: the server keeps the streak; it already halved it per day away
+      $('#potion', sh).onclick = () => { if (!canPotion || G.coins < 10) return $('#potion', sh).classList.add('shake'); CLOUD.shield(true).then(() => { closeSheet(); SFX.levelup(); confetti(50); toast('🧪 Streak ปลอดภัย! ยังคง ×' + LPX.mult(G.streak).toFixed(2)); go(cur, { force: true, dir: 'none' }); }).catch(e => toast(e.message)); };
+      $('#halve', sh).onclick = () => CLOUD.shield(false).then(() => { closeSheet(); SFX.sad(); toast(`Streak ลดเหลือ ${G.streak} วัน · เริ่มสะสมใหม่กัน!`); go(cur, { force: true, dir: 'none' }); }).catch(e => toast(e.message));
+      return;
+    }
     $('#potion', sh).onclick = () => {
       if (!canPotion || G.coins < 10) return $('#potion', sh).classList.add('shake');
       G.coins -= 10; G.shield = null; saveG(); closeSheet(); SFX.levelup(); confetti(50); toast('🧪 Streak ปลอดภัย! ยังคง ×' + LPX.mult(G.streak).toFixed(2));
@@ -322,7 +327,7 @@ LIFE.eli = pg => {
   hit.addEventListener('click', () => { if (acc > 300) return; homeEli.pose(vital === 'happy' ? 'cheer6' : idlePose()); homeEli.jump(40, 420); SFX.pop(); homeEli.say(vital === 'happy' ? ['จิ้มทำไมอ่า~ ลูบดีกว่า!', 'ไปเดินกันไหม?', 'วันนี้เป็นไงบ้าง?'][Math.random() * 3 | 0] : 'ลูบตัวหน่อยนะ...', 1500); setTimeout(() => homeEli && homeEli.pose(idlePose()), 900); });
 
   async function petDone() {
-    G.today.pet = true; G.today.petMs = NEED; petting = false; stage.classList.remove('petting'); homeEli.sq.style.transform = '';
+    G.today.pet = true; G.today.petMs = NEED; if (CLOUD.on) CLOUD.day({ pet: true }); petting = false; stage.classList.remove('petting'); homeEli.sq.style.transform = '';
     const woke = vital !== 'happy';
     G.vital = 'happy'; G.away = 0; saveG();
     buzz([20, 40, 60]); SFX.giggle(); setTimeout(() => SFX.coin(), 250);

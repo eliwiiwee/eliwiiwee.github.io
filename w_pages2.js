@@ -192,13 +192,15 @@ const SHOPW = {
   fr: [{ id: 'shoe10', n: 'คูปองรองเท้าวิ่ง 10%', c: 500, img: 'i_sneaker', ext: 'webp' }, { id: 'bottle', n: 'ขวดน้ำ Sport', c: 450, img: 'it_bottle', ext: 'webp' }, { id: 'smoothie', n: 'สมูทตี้ฟรี 1 แก้ว', c: 250, img: 'it_gift', ext: 'webp' }, { id: 'gym', n: 'ฟิตเนส 1 เดือน', c: 1500, img: 'it_medal', ext: 'webp' }],
 };
 const shopItem = id => [...SHOPW.orig, ...SHOPW.fr].find(x => x.id === id);
-const pimg = it => `assets/${it.img}.${it.ext || 'webp'}`;
+// the app's products may point to an image on the web; anything that isn't a plain https link or an app image name shows a gift
+const pimg = it => /^https:\/\/[^"'<>\s]+$/.test(it.img || '') ? it.img : /^[\w-]+$/.test(it.img || '') ? `assets/${it.img}.${it.ext || 'webp'}` : 'assets/it_gift.webp';
 LIFE.treasury = pg => {
   pg.classList.add('w-tr');
   let tab = 'orig';
   const H = appH, cartTop = H - 166;   // above the raised Step Trek button
   const banH = Math.round(Math.max(92, Math.min(150, (H - 560) * .55 + 92))), gridTop = 90 + banH + 44;   // shorter banner on short phones
   pg.innerHTML = `<i class="wlogo tr-logo"></i><b class="tr-ttl">Treasury</b><span class="tr-sub">แลกของรางวัล เพื่อสุขภาพที่ดีกว่า</span>
+    <button class="tr-hist press" id="trHist" aria-label="ของที่แลกแล้ว"><img src="assets/i_history.webp" alt=""></button>
     <div class="tr-coins coinchip2">${wi('w_coin')}<span><b data-coins>${wcoins()}</b> <small>coins</small></span></div>
     <div class="tr-ban ${banH < 124 ? "sm" : ""}" style="height:${banH}px"><img src="assets/tr_banner.webp" alt=""><div class="tx"><b>ก้าวเล็ก ๆ<br>แลกรางวัลใหญ่</b><span>สะสมเหรียญจากการเดินและการนอน</span></div></div>
     <div class="tr-tabs" id="trTabs" style="--tt:${90 + banH + 10}px"><i class="ind"></i><button class="on" data-t="orig">Eli Originals</button><button data-t="fr">Eli friends</button></div>
@@ -219,16 +221,21 @@ LIFE.treasury = pg => {
   };
   const draw = () => {
     $('#trGrid', pg).innerHTML = SHOPW[tab].map((it, k) => `<div class="tr-card" style="animation-delay:${k * .05}s" data-id="${it.id}">
-      <div class="pi"><img src="${pimg(it)}" alt=""></div>${it.nw ? '<span class="nw">NEW</span>' : ''}
-      <span class="nm">${it.n}</span><span class="pr">${wi('w_coin')}${fmt(it.c)} <small>coins</small></span>
+      <div class="pi"><img src="${pimg(it)}" alt=""></div>${it.out ? '<span class="nw" style="background:#9A938C">หมด</span>' : it.nw ? '<span class="nw">NEW</span>' : ''}
+      <span class="nm">${esc(it.n)}</span><span class="pr">${wi('w_coin')}${fmt(it.c)} <small>coins</small></span>
       <button class="add ${G.cart.includes(it.id) ? 'in' : ''}" aria-label="ใส่ตะกร้า">${wi('tr_cart')}</button></div>`).join('');
   };
   draw(); paintCart();
+  if (CLOUD.on) CLOUD.products().then(p => {   // the app: the items and prices set in the database
+    SHOPW.orig = p.orig; SHOPW.fr = p.fr; G.cart = G.cart.filter(id => shopItem(id));
+    if (cur === 'treasury') { draw(); paintCart(); }
+  }).catch(e => toast(e.message));
+  $('#trHist', pg).onclick = () => orderHistory();
   $$('#trTabs button', pg).forEach(b => b.onclick = () => { tab = b.dataset.t; $$('#trTabs button', pg).forEach(x => x.classList.toggle('on', x === b)); $('#trTabs', pg).classList.toggle('fr', tab === 'fr'); draw(); });
   $('#trGrid', pg).addEventListener('click', e => {
     const b = e.target.closest('.add'); const card = e.target.closest('.tr-card'); if (!card) return;
     const it = shopItem(card.dataset.id);
-    if (!b) return openSheet(`<h4>${it.n}</h4><div style="display:grid;place-items:center;padding:6px 0 10px"><img src="${pimg(it)}" style="max-height:150px" alt=""></div><p class="wsheet-p">แลกด้วย <b>${fmt(it.c)} coins</b> · ${tab === 'orig' ? 'สินค้าจากแบรนด์ eli จัดส่งถึงบ้าน' : 'สิทธิพิเศษจากพาร์ทเนอร์ของ eli'}</p><button class="btn btn-o press" data-close id="shAdd">ใส่ตะกร้า</button>`, sh => $('#shAdd', sh).onclick = () => { if (!G.cart.includes(it.id)) { G.cart.push(it.id); saveG(); draw(); paintCart(); } });
+    if (!b) return openSheet(`<h4>${esc(it.n)}</h4><div style="display:grid;place-items:center;padding:6px 0 10px"><img src="${pimg(it)}" style="max-height:150px" alt=""></div><p class="wsheet-p">แลกด้วย <b>${fmt(it.c)} coins</b> · ${tab === 'orig' ? 'สินค้าจากแบรนด์ eli จัดส่งถึงบ้าน' : 'สิทธิพิเศษจากพาร์ทเนอร์ของ eli'}</p><button class="btn btn-o press" data-close id="shAdd">ใส่ตะกร้า</button>`, sh => $('#shAdd', sh).onclick = () => { if (!G.cart.includes(it.id)) { G.cart.push(it.id); saveG(); draw(); paintCart(); } });
     const i = G.cart.indexOf(it.id);
     if (i >= 0) { G.cart.splice(i, 1); b.classList.remove('in'); SFX.pop(); }
     else { G.cart.push(it.id); b.classList.add('in'); SFX.coin(); buzz(12); b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 380 }); flyTo(b, $('#trBar .ci', pg), `<img src="${pimg(it)}" alt="" style="width:30px;height:30px;object-fit:contain">`, 1); }
@@ -236,41 +243,77 @@ LIFE.treasury = pg => {
   });
   $('#trCart', pg).onclick = () => {
     const { n, sum } = cartInfo(); if (!n) return toast('เลือกของรางวัลก่อนนะ');
-    openSheet(`<h4>ยืนยันการแลก</h4>${G.cart.map(id => { const it = shopItem(id); return `<div class="tr-sheet-row"><img src="${pimg(it)}" alt=""><b>${it.n}</b><em>${fmt(it.c)}</em></div>`; }).join('')}
+    openSheet(`<h4>ยืนยันการแลก</h4>${G.cart.map(id => { const it = shopItem(id); return `<div class="tr-sheet-row"><img src="${pimg(it)}" alt=""><b>${esc(it.n)}</b><em>${fmt(it.c)}</em></div>`; }).join('')}
       <div class="tr-sum"><span>รวม</span><b>${fmt(sum)} coins</b></div><div class="tr-sum" style="margin-top:-6px"><span>คงเหลือหลังแลก</span><b style="color:${G.coins - sum < 0 ? '#C42B37' : 'var(--wi)'}">${fmt(G.coins - sum)} coins</b></div>
       <button class="btn btn-o press" id="shOk">ยืนยันการแลก</button><div style="height:8px"></div><button class="btn btn-d press" data-close>เลือกเพิ่ม</button>`, sh => $('#shOk', sh).onclick = () => {
       if (G.coins < sum) { closeSheet(); return toast(`เหรียญไม่พอ ขาดอีก ${fmt(sum - G.coins)} coins`); }
+      if (CLOUD.on) {   // the app: the server checks the coins and the stock and pays in one go
+        const b = $('#shOk', sh); if (b.disabled) return; b.disabled = true; b.textContent = 'กำลังแลก…';
+        return CLOUD.redeem([...G.cart]).then(order => { G.redeemed.unshift(order); G.cart = []; saveG(); closeSheet(); SFX.levelup(); confetti(60); go('redeem', { order }); })
+          .catch(e => { b.disabled = false; b.textContent = 'ยืนยันการแลก'; SFX.sad(); toast(e.message); });
+      }
       G.coins -= sum; const order = { items: [...G.cart], sum, code: 'ELI-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase() };
       G.redeemed.unshift(order); G.cart = []; saveG(); closeSheet(); SFX.levelup(); confetti(60); go('redeem', { order });
     });
   };
 };
 
+// what I've redeemed: status from the eli team, the parcel number, and the address if it was skipped
+const ORD_ST = { new: ['รอจัดส่ง', '#B76E00', '#FFF1D6'], shipping: ['กำลังจัดส่ง', '#2A3B9C', '#EEF0FB'], done: ['ได้รับแล้ว', '#1F8A4C', '#E5F4EA'], cancelled: ['ยกเลิก · คืนเหรียญแล้ว', '#77716C', '#F1EEEA'] };
+async function orderHistory() {
+  SFX.pop();
+  openSheet('<h4>ของที่แลกแล้ว</h4><div class="oh-list" id="ohList"><p class="wsheet-p">กำลังโหลด…</p></div>', async sh => {
+    let list;
+    try { list = CLOUD.on ? await CLOUD.orders() : G.redeemed.map(o => ({ ...o, status: 'new', shipped: !!o.shipped, names: o.items.map(id => shopItem(id)?.n || id) })); }
+    catch (e) { $('#ohList', sh).innerHTML = `<p class="wsheet-p">${e.message}</p>`; return; }
+    if (!list.length) { $('#ohList', sh).innerHTML = '<p class="wsheet-p">ยังไม่เคยแลกของรางวัล<br>สะสมเหรียญจากการเดินและการนอนแล้วมาแลกกันนะ</p>'; return; }
+    $('#ohList', sh).innerHTML = list.map((o, i) => { const st = ORD_ST[o.status] || ORD_ST.new, it = shopItem(o.items[0]);
+      return `<div class="oh-row"><img src="${it ? pimg(it) : 'assets/it_gift.webp'}" alt=""><div class="oh-tx"><b>${esc(o.names[0])}${o.items.length > 1 ? ` +${o.items.length - 1}` : ''}</b>
+        <span>${o.code}${o.at ? ' · ' + new Date(o.at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }) : ''} · ${fmt(o.sum)} coins</span>
+        ${(o.coupons || []).map(c => `<button class="oh-trk" data-t="${esc(c.code)}">โค้ด ${esc(c.name)}: ${esc(c.code)} · คัดลอก</button>`).join('')}
+        ${o.tracking ? `<button class="oh-trk" data-t="${esc(o.tracking)}">เลขพัสดุ ${esc(o.tracking)} · คัดลอก</button>` : ''}
+        ${!o.shipped && !o.digital && o.status === 'new' ? `<button class="oh-addr" data-i="${i}">กรอกที่อยู่จัดส่ง ›</button>` : ''}</div>
+        <em style="color:${st[1]};background:${st[2]}">${o.digital ? 'ใช้โค้ดได้เลย' : st[0]}</em></div>`; }).join('');
+    $$('.oh-trk', sh).forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.t); toast('คัดลอกเลขพัสดุแล้ว ✓'); } catch (e) { toast(b.dataset.t); } });
+    $$('.oh-addr', sh).forEach(b => b.onclick = () => { closeSheet(); go('redeem', { order: list[b.dataset.i] }); });
+  });
+}
+
 /* ═════════ Redeem (nrd_A) ═════════ */
 LIFE.redeem = (pg, opt) => {
   pg.classList.add('w-rd');
   const order = opt.order || G.redeemed[0] || { items: ['shorts'], sum: 1200, code: 'ELI-7F3K-92QD' };
-  const it = shopItem(order.items[0]), more = order.items.length - 1, H = appH, okTop = Math.max(H - 52, 560);
+  const it = shopItem(order.items[0]) || { id: order.items[0], n: (order.names || [])[0] || 'ของรางวัล', img: 'it_gift', ext: 'webp' }, more = order.items.length - 1, H = appH, okTop = Math.max(H - 52, 560);
+  // a partner coupon: the code is the partner's, there is nothing to ship
+  const cp = (order.coupons || [])[0], showCode = cp ? cp.code : order.code, digital = !!order.digital;
   pg.innerHTML = `<img class="wbg" src="assets/w_rd_bg.webp" alt="">
     <button class="rd-back press" data-go="treasury" aria-label="กลับ">${wi('rd_back')}</button><i class="wlogo rd-logo"></i><b class="rd-ttl">แลกของรางวัล</b>
     <section class="rd-pc rise"><div class="th"><img src="${it.id === 'shorts' ? 'assets/rd_shorts.webp' : pimg(it)}" alt=""></div>${wi('rd_check', 'ck')}<span class="ok">แลกสำเร็จแล้ว</span>
-      <h3>${it.n}${more ? ` +${more}` : ''}</h3><div class="use">${wi('rd_coin')}ใช้ <b>${fmt(order.sum)}</b> <small>coins</small></div></section>
-    <section class="rd-code rise" style="--d:.08s">${wi('rd_rays_l', 'rl')}${wi('rd_rays_r', 'rr')}<div class="pill" id="rdCode">${order.code}</div><button class="cp press" id="rdCp" aria-label="คัดลอกโค้ด">${wi('rd_copy')}</button><p>แสดงโค้ดนี้ หรือใช้เลขสิทธิประโยชน์ที่ร้านค้า</p></section>
-    <form class="rd-form rise" style="--d:.14s" id="rdForm" autocomplete="off"><h4>${wi('rd_truck')}กรอกที่อยู่ในการจัดส่ง</h4>
+      <h3 data-fw="186" data-fmax="21" style="white-space:nowrap">${esc(it.n)}${more ? ` +${more}` : ''}</h3><div class="use">${wi('rd_coin')}ใช้ <b>${fmt(order.sum)}</b> <small>coins</small></div></section>
+    <section class="rd-code rise" style="--d:.08s">${wi('rd_rays_l', 'rl')}${wi('rd_rays_r', 'rr')}<div class="pill" id="rdCode"><span data-fw="200" data-fmax="25" style="white-space:nowrap">${esc(showCode)}</span></div><button class="cp press" id="rdCp" aria-label="คัดลอกโค้ด">${wi('rd_copy')}</button><p>${cp ? `โค้ดของ ${esc(cp.name)} · ใช้ที่ร้านพาร์ทเนอร์${(order.coupons || []).length > 1 ? ` (ดูโค้ดอื่นใน "ของที่แลกแล้ว")` : ''}` : 'แสดงโค้ดนี้ หรือใช้เลขสิทธิประโยชน์ที่ร้านค้า'}</p></section>
+    <form class="rd-form rise" style="--d:.14s${digital ? ';display:none' : ''}" id="rdForm" autocomplete="off"><h4>${wi('rd_truck')}กรอกที่อยู่ในการจัดส่ง</h4>
       <label class="rd-f">${wi('rd_user')}<input id="rdN" placeholder="ชื่อ"></label>
       <label class="rd-f">${wi('rd_phone')}<input id="rdP" placeholder="เบอร์โทร" inputmode="tel"></label>
       <label class="rd-f">${wi('rd_pin')}<input id="rdA" placeholder="ที่อยู่"></label>
       <label class="rd-f">${wi('rd_note')}<input id="rdR" placeholder="หมายเหตุ"></label></form>
-    <button class="rd-ok press" id="rdOk" style="top:${okTop}px">ยืนยัน</button><i style="position:absolute;top:${okTop + 50}px;height:1px;width:1px"></i>`;
+    <button class="rd-ok press" id="rdOk" style="top:${okTop}px">${digital ? 'เสร็จแล้ว' : 'ยืนยัน'}</button><i style="position:absolute;top:${okTop + 50}px;height:1px;width:1px"></i>`;
   bindGo(pg);
-  $('#rdCp', pg).onclick = async () => { try { await navigator.clipboard.writeText(order.code); toast('คัดลอกโค้ดแล้ว ✓'); } catch (e) { toast(`โค้ด: ${order.code}`); } SFX.pop(); };
+  hdFit(pg); document.fonts?.ready.then(() => hdFit(pg));   // long names / partner codes shrink to fit
+  $('#rdCp', pg).onclick = async () => { try { await navigator.clipboard.writeText(showCode); toast('คัดลอกโค้ดแล้ว ✓'); } catch (e) { toast(`โค้ด: ${showCode}`); } SFX.pop(); };
   $('#rdForm', pg).onsubmit = e => e.preventDefault();
   $('#rdOk', pg).onclick = () => {
+    if (digital) { SFX.pop(); return go('treasury'); }
     const n = $('#rdN', pg).value.trim(), p = $('#rdP', pg).value.replace(/\D/g, ''), a = $('#rdA', pg).value.trim();
     const bad = !n ? '#rdN' : p.length < 9 ? '#rdP' : !a ? '#rdA' : null;
     if (bad) { const f = $(bad, pg).closest('.rd-f'); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 300 }); $(bad, pg).focus(); return toast(bad === '#rdP' ? 'กรอกเบอร์โทรให้ครบนะ' : 'กรอกข้อมูลให้ครบก่อนนะ'); }
+    if (CLOUD.on && !$('#rdOk', pg).dataset.sent) {   // the app: the address goes with the order to the eli team
+      const b = $('#rdOk', pg); if (b.disabled) return; b.disabled = true; b.textContent = 'กำลังส่ง…';
+      return CLOUD.ship(order.code, n, $('#rdP', pg).value.trim(), a, $('#rdR', pg).value.trim())
+        .then(() => { b.dataset.sent = 1; b.disabled = false; b.textContent = 'ยืนยัน'; b.click(); })
+        .catch(e => { b.disabled = false; b.textContent = 'ยืนยัน'; SFX.sad(); toast(e.message); });
+    }
     SFX.levelup(); confetti(50);
-    openSheet(`<h4>ยืนยันการจัดส่งแล้ว 🎉</h4><p class="wsheet-p">${it.n} จะส่งถึงคุณ ${n} ภายใน 3–5 วันทำการ<br>โค้ดอ้างอิง <b>${order.code}</b></p><button class="btn btn-o press" id="shBack">กลับไป Treasury</button>`, sh => $('#shBack', sh).onclick = () => { closeSheet(); go('treasury'); });
+    openSheet(`<h4>ยืนยันการจัดส่งแล้ว 🎉</h4><p class="wsheet-p">${esc(it.n)} จะส่งถึงคุณ ${n} ภายใน 3–5 วันทำการ<br>โค้ดอ้างอิง <b>${order.code}</b></p><button class="btn btn-o press" id="shBack">กลับไป Treasury</button>`, sh => $('#shBack', sh).onclick = () => { closeSheet(); go('treasury'); });
   };
 };
 
@@ -282,7 +325,7 @@ LIFE.settings = pg => {
   const tg = (k) => `<i class="st-tg ${S[k] ? 'on' : ''}" data-k="${k}"></i>`, ch = v => `${v ? `<em>${v}</em>` : ''}${wi('st_chev', 'ch')}`;
   pg.innerHTML = `<img class="wbg" src="assets/w_set_bg.webp" alt="">
     <button class="st-back press" data-go="world" aria-label="กลับ">${wi('st_back')}</button><b class="st-ttl">ตั้งค่า</b>
-    <section class="st-pf rise" id="stPf"><span class="av"><img src="assets/w_avatar.webp" alt=""></span><span class="bd"><i></i></span><b>${G.citizen.name}</b><span>Eli Citizen ID • ${G.citizen.id}</span>${wi('st_chev', 'ch')}</section>
+    <section class="st-pf rise" id="stPf"><span class="av"><img src="assets/w_avatar.webp" alt=""></span><span class="bd"><i></i></span><b>${esc(G.citizen.name)}</b><span>Eli Citizen ID • ${G.citizen.id}</span>${wi('st_chev', 'ch')}</section>
     <section class="st-g rise" style="top:192px;--d:.04s">${row('st_health', 'เชื่อมต่อ Health', tg('health'), 'Apple Health / Google Fit')}${row('st_bell', 'การแจ้งเตือน', tg('notif'))}</section>
     <section class="st-g rise" style="top:294px;--d:.08s">${row('st_shoe', 'เป้าหมายก้าวต่อวัน', ch(fmt(S.steps)), '', 'stSteps')}${row('st_moon', 'เป้าหมายการนอน', ch(S.sleep + ' ชม.'), '', 'stSleep')}</section>
     <section class="st-g rise" style="top:389px;--d:.12s">${row('st_ruler', 'หน่วยระยะทาง', ch(S.unit), '', 'stUnit')}${row('st_globe', 'ภาษา', ch(S.lang), '', 'stLang')}</section>

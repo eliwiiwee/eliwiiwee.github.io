@@ -14,7 +14,9 @@ const HF = [   // friends (mock): the doc's two stories are ต้น (away 3 mo
   { id: 'f5', n: 'ต้น', av: 'h_av5', total: 100, week: 0, away: true },
 ];
 const hallMe = () => ({ id: 'me', n: 'คุณ', img: G.citizen.photo || 'assets/w_avatar.webp', total: G.total, week: G.weekLP + earnedToday(), me: true });
-const hallRank = mode => [...HF.map(f => ({ ...f, img: `assets/${f.av}.webp` })), hallMe()].sort((a, b) => mode === 'week' ? b.week - a.week : b.total - a.total);
+let HALL = null;   // the app: me + friends + the overall top 20 from the server (null until the first load)
+const hallRank = mode => (CLOUD.on ? [...(HALL || []).filter(r => !r.me), { ...hallMe(), img: G.citizen.photo || 'assets/w_avatar.webp' }] : [...HF.map(f => ({ ...f, img: `assets/${f.av}.webp` })), hallMe()])
+  .sort((a, b) => mode === 'week' ? b.week - a.week : b.total - a.total);
 LIFE.hall = pg => {
   pg.classList.add('w-hall2');
   let mode = 'week';
@@ -30,31 +32,52 @@ LIFE.hall = pg => {
     <section class="h2-list" style="top:${listTop}px"><div class="h2-lh"><i class="bars"><i></i><i></i><i></i></i><b>อันดับ Life Power</b></div><div class="h2-rows" id="hhRows"></div></section>`;
   const val = r => mode === 'week' ? r.week : r.total;
   const lv = r => LPX.level(r.total), tk = r => LPX.tier(lv(r)).key;
-  const who = r => { const t = LPX.tier(lv(r)); return `${r.me ? 'คุณ' : r.n} · Lv.${lv(r)} ${t.ic} ${t.name}${r.away ? ' · 💤 หายไป 3 เดือน พลังสลายเหลือ 100 LP' : ''}`; };
+  const who = r => { const t = LPX.tier(lv(r)); return `${r.me ? 'คุณ' : r.n} · Lv.${lv(r)} ${t.ic} ${t.name}${r.away ? (CLOUD.on ? ' · 💤 ไม่ได้เข้ามาหลายวันแล้ว' : ' · 💤 หายไป 3 เดือน พลังสลายเหลือ 100 LP') : ''}`; };
   const draw = () => {
     const all = hallRank(mode), top = all.slice(0, 3), rest = all.slice(3), mx = Math.max(1, val(all[0]));
     const legends = all.filter(r => lv(r) >= 30).sort((a, b) => b.total - a.total);
-    $('#hhTop', pg).innerHTML = `<i class="rays"></i>${[[2, 1], [1, 0], [3, 2]].map(([n, i]) => `
+    $('#hhTop', pg).innerHTML = `<i class="rays"></i>${[[2, 1], [1, 0], [3, 2]].map(([n, i]) => !top[i] ? `
+      <div class="h2-p p${n} empty" data-i="${i}"><div class="av"><img src="assets/w_avatar.webp" alt="" style="opacity:.3"></div><i class="md">${n}</i>
+        <div class="ped"><i class="top"></i><div class="nm"><b>ที่ว่าง</b><span>ชวนเพื่อนมา</span></div></div></div>` : `
       <div class="h2-p p${n} ${top[i].me ? 'me' : ''}" data-i="${i}">
         ${n === 1 ? '<img class="cr" src="assets/h_crown1.png" alt="">' : ''}
-        <div class="av t-${tk(top[i])}"><img src="${top[i].img}" alt=""></div>
+        <div class="av t-${tk(top[i])}"><img src="${safeImg(top[i].img)}" alt=""></div>
         <i class="md">${n}</i>
-        <div class="ped"><i class="top"></i><div class="nm"><b>${top[i].n}</b><span>${fmt(val(top[i]))} LP</span></div></div>
+        <div class="ped"><i class="top"></i><div class="nm"><b>${esc(top[i].n)}</b><span>${fmt(val(top[i]))} LP</span></div></div>
       </div>`).join('')}`;
-    $('#hhRows', pg).innerHTML = legends.map(r => `<div class="h2-leg" data-id="${r.id}"><span class="av t-eternal"><img src="${r.img}" alt=""></span>
-        <span class="mid"><b>📌 ${r.n}</b><small>🌟 Eternal Legend · Lv.${lv(r)} · ปักหมุดถาวร</small></span><span class="lp">${fmt(r.total)}<small>LP</small></span></div>`).join('') +
-      rest.map((r, k) => `<div class="h2-row ${r.me ? 'me' : ''} ${r.away ? 'away' : ''}" style="animation-delay:${k * .06}s" data-id="${r.id}">
-      <span class="rk">${4 + k}</span><span class="av t-${tk(r)}"><img src="${r.img}" alt=""></span>
-      <span class="mid"><b><span class="nmx">${r.n}</span><small class="lvc t-${tk(r)}">Lv.${lv(r)}</small></b><span class="bar"><i data-w="${val(r) / mx * 100}"></i></span></span><span class="lp">${fmt(val(r))}</span>
+    $('#hhRows', pg).innerHTML = legends.map(r => `<div class="h2-leg" data-id="${esc(r.id)}"><span class="av t-eternal"><img src="${safeImg(r.img)}" alt=""></span>
+        <span class="mid"><b>📌 ${esc(r.n)}</b><small>🌟 Eternal Legend · Lv.${lv(r)} · ปักหมุดถาวร</small></span><span class="lp">${fmt(r.total)}<small>LP</small></span></div>`).join('') +
+      rest.map((r, k) => `<div class="h2-row ${r.me ? 'me' : ''} ${r.away ? 'away' : ''}" style="animation-delay:${k * .06}s" data-id="${esc(r.id)}">
+      <span class="rk">${4 + k}</span><span class="av t-${tk(r)}"><img src="${safeImg(r.img)}" alt=""></span>
+      <span class="mid"><b><span class="nmx">${esc(r.n)}</span><small class="lvc t-${tk(r)}">Lv.${lv(r)}</small></b><span class="bar"><i data-w="${val(r) / mx * 100}"></i></span></span><span class="lp">${fmt(val(r))}</span>
       ${r.me ? `<span class="you" title="Streak">🔥${G.streak} <small>×${LPX.mult(G.streak).toFixed(2)}</small></span>` : `<button class="ht ${G.today.sentTo[r.id] ? 'on' : ''}" aria-label="ส่งพลังใจ">${heart}<span>${G.today.sentTo[r.id] ? 'ส่งแล้ว' : 'ส่งพลังใจ'}</span></button>`}</div>`).join('') +
       `<button class="h2-inv press" id="hhInv"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-7 2-7 5v2h11.3A6.5 6.5 0 0 1 13 13.4 12 12 0 0 0 9 13zm9 0v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>ชวนเพื่อนมาแข่งใน Hero Hall</button>
       <p class="h2-note">${mode === 'week' ? 'คะแนนสัปดาห์ = Life Power ที่ได้สัปดาห์นี้ (เริ่มใหม่ทุกวันจันทร์) · คนที่หายไปได้ 0 · ยิ่งเข้าติดต่อกัน ตัวคูณ Streak ยิ่งสูง (สูงสุด ×2.5)' : 'ตลอดกาล = Life Power สะสมทั้งหมด · หายไปเกิน 3 วันพลังจะค่อย ๆ สลาย คนใหม่ที่สม่ำเสมอจึงแซงได้ · Lv.30 ขึ้นไปได้ปักหมุดถาวร'}</p>`;
     later(80, () => $$('.h2-row .bar i', pg).forEach(i => i.style.width = i.dataset.w + '%'));
-    $$('.h2-p', pg).forEach(a => a.onclick = () => { SFX.pop(); a.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)' }, { transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' }); toast(`${who(top[a.dataset.i])} · ${fmt(val(top[a.dataset.i]))} LP`); });
+    $$('.h2-p', pg).forEach(a => a.onclick = () => { if (!top[a.dataset.i]) return invite(); SFX.pop(); a.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)' }, { transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' }); toast(`${who(top[a.dataset.i])} · ${fmt(val(top[a.dataset.i]))} LP`); });
     $$('.h2-row .av, .h2-leg', pg).forEach(a => a.onclick = () => { const r = all.find(x => x.id === a.closest('[data-id]').dataset.id); SFX.pop(); toast(who(r)); });
-    $('#hhInv', pg).onclick = () => toast('ส่งลิงก์ชวนเพื่อนแล้ว 💌');
+    $('#hhInv', pg).onclick = invite;
   };
-  draw();
+  // invite: share my Eli Citizen ID / link; add a friend by theirs (the app). The demo just says it was sent.
+  const invite = () => {
+    if (!CLOUD.on) return toast('ส่งลิงก์ชวนเพื่อนแล้ว 💌');
+    const code = G.inviteCode || '', msg = `มาแข่ง Life Power กับฉันใน Eli's World นะ! ใส่รหัสเชิญ ${code} ที่ Hero Hall → ชวนเพื่อนมาแข่ง`;
+    openSheet(`<h4>ชวนเพื่อนมาแข่ง</h4><p class="wsheet-p">รหัสเชิญของคุณ <b style="font-size:20px;letter-spacing:2px">${esc(code)}</b><br>ส่งให้เพื่อนใส่ หรือใส่รหัสของเพื่อนด้านล่าง แล้วจะเห็นกันใน Hero Hall</p>
+      <button class="btn btn-o press" id="hiShare">แชร์รหัสเชิญของฉัน</button>
+      <div style="display:flex;gap:8px;margin-top:12px"><input class="s2-delin" id="hiId" autocapitalize="characters" autocomplete="off" maxlength="8" placeholder="รหัสเชิญของเพื่อน" style="flex:1;text-transform:uppercase;letter-spacing:1px"><button class="btn btn-d press" id="hiAdd" style="width:96px">เพิ่ม</button></div>`, sh => {
+      $('#hiShare', sh).onclick = async () => {
+        if (window.NATIVE) return NATIVE.shareText(msg);
+        try { await navigator.share({ text: msg }); } catch (e) { try { await navigator.clipboard.writeText(msg); toast('คัดลอกข้อความชวนแล้ว ✓'); } catch (e2) { toast(msg); } }
+      };
+      $('#hiAdd', sh).onclick = async () => {
+        const v = $('#hiId', sh).value.trim(); if (v.length < 8) return toast('รหัสเชิญมี 8 ตัวอักษรนะ');
+        if (v.toUpperCase() === code) return toast('นี่รหัสของคุณเองนะ 😄');
+        try { const f = await CLOUD.addFriend(v); closeSheet(); SFX.levelup(); toast(`เพิ่ม ${f.name} เป็นเพื่อนแล้ว 💙`); refresh(); } catch (e) { SFX.sad(); toast(e.message); }
+      };
+    });
+  };
+  const refresh = () => CLOUD.on && CLOUD.hall().then(r => { HALL = r; if (cur === 'hall') draw(); }).catch(e => toast(e.message));
+  draw(); refresh();
   $$('#hhSeg button', pg).forEach(b => b.onclick = () => { mode = b.dataset.m; SFX.pop(); $$('#hhSeg button', pg).forEach(x => x.classList.toggle('on', x === b)); $('#hhSeg', pg).classList.toggle('all', mode === 'all'); draw(); });
   $('#hhRows', pg).addEventListener('click', e => {
     const b = e.target.closest('.ht'); if (!b) return;
@@ -62,6 +85,7 @@ LIFE.hall = pg => {
     if (G.today.sentTo[id]) return toast('ส่งพลังใจให้เพื่อนคนนี้แล้ววันนี้ 💙');
     const order = () => hallRank(mode).map(r => r.id).join(), was = order(), e0 = earnedToday();
     G.today.sentTo[id] = true; const first = !G.today.sent; G.today.sent = true; saveG();
+    if (CLOUD.on) CLOUD.heart(id).catch(e => toast(e.message));
     b.classList.add('on'); $('span', b).textContent = 'ส่งแล้ว'; SFX.chime(); buzz(20);
     const r = relLocal(b, pg); floatUp(pg, r.x, r.y - 10, '💗', 5);
     if (!first) return toast('ส่งพลังใจแล้ว 💗');

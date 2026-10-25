@@ -165,6 +165,11 @@ LIFE.welcome = pg => {
       </form>
     </div></div>`);
   const join = $('#wlJoin', pg);
+  if (CLOUD.on) {   // the real app: only the sign-in ways this server is set up for
+    const ok = k => k === 'apple' ? CLOUD.providers.includes('apple') && window.NATIVE && NATIVE.platform === 'ios' : CLOUD.providers.includes(k);
+    $$('[data-so]', join).forEach(b => { if (!ok(b.dataset.so)) b.remove(); });
+    if (!$('[data-so]', join)) $('.v0 .jb.t.sm', join).outerHTML = '<button class="jb p press" type="button" data-v="1">สมัครด้วยอีเมล</button><button class="jb t" type="button" data-v="2">มีบัญชีแล้ว? เข้าสู่ระบบ</button>';
+  }
   // while the pop-up is open the world slides up (podium + ELi stay visible above it); the title and the logo stay put
   const title = $('.wl-title', pg), tTop = title.offsetTop;
   const lift = () => {
@@ -198,11 +203,11 @@ LIFE.welcome = pg => {
     if (isNew) G.citizen.setup = false;   // a brand-new account fills in its profile right after the ID card
     // remember me: off = this browser session only (the app asks to log in again after it is closed)
     G.remember = remember; try { sessionStorage.setItem('eli_sess', '1'); } catch (e) {}
-    if (isNew || !/^\d{6}$/.test(G.citizen.id)) G.citizen.id = newId();
+    if (!CLOUD.on && (isNew || !/^\d{6}$/.test(G.citizen.id))) G.citizen.id = newId();   // the server hands out the real number
     saveG();
     join.classList.remove('on'); lift();
     const card = document.createElement('div'); card.className = 'wl-cid';
-    card.innerHTML = `<div class="cc"><i class="wlogo"></i><span class="k">Eli Citizen ID</span><b class="id">${[...G.citizen.id].map((d, i) => `<i style="--i:${i}">${d}</i>`).join('')}</b><span class="nm">${G.citizen.name}</span></div>`;
+    card.innerHTML = `<div class="cc"><i class="wlogo"></i><span class="k">Eli Citizen ID</span><b class="id">${[...G.citizen.id].map((d, i) => `<i style="--i:${i}">${d}</i>`).join('')}</b><span class="nm">${esc(G.citizen.name)}</span></div>`;
     pg.append(card); later(20, () => card.classList.add('on'));
     SFX.levelup(); buzz([20, 40, 20]); later(500, () => confetti(80));
     eli.pose('cheer1'); eli.jump(50, 500).then(() => eli.pose('cheer6'));
@@ -213,21 +218,29 @@ LIFE.welcome = pg => {
   };
   const shake = el => el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 300 });
   const okMail = m => /^\S+@\S+\.\S+$/.test(m);
+  // a form waiting for the server: its button says so and can't be pressed twice; errors come back as a Thai toast
+  const busy = async (f, job) => {
+    const b = $('.jb.p', f); if (b.disabled) return; const t = b.textContent; b.disabled = true; b.textContent = 'กำลังเชื่อมต่อ…';
+    try { await job(); } catch (e) { SFX.sad(); toast(e.message); } finally { b.disabled = false; b.textContent = t; }
+  };
   $('.v1', join).onsubmit = e => {
     e.preventDefault(); const f = e.target, m = f.e.value.trim(), p = f.p.value;
     const bad = !okMail(m) ? f.e : p.length < 6 ? f.p : null;
     if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast(bad === f.p ? 'รหัสผ่านอย่างน้อย 6 ตัวนะ' : 'อีเมลยังไม่ถูกต้อง'); }
+    if (CLOUD.on) return busy(f, async () => { const r = await CLOUD.signUp(m, p); if (r.confirm) { toast(`ส่งลิงก์ยืนยันไปที่ ${m} แล้ว ยืนยันแล้วเข้าสู่ระบบได้เลย`); return view(2); } welcomeIn(null, !G.citizen.setup, f.r.checked); });
     welcomeIn(null, true, f.r.checked);
   };
   $('.v2', join).onsubmit = e => {
     e.preventDefault(); const f = e.target, m = f.e.value.trim(), p = f.p.value;
     const bad = !okMail(m) ? f.e : !p ? f.p : null;
     if (bad) { shake(bad.closest('.jf')); bad.focus(); return toast('กรอกอีเมลและรหัสผ่านก่อนนะ'); }
+    if (CLOUD.on) return busy(f, async () => { await CLOUD.signIn(m, p); welcomeIn(null, !G.citizen.setup, f.r.checked); });
     welcomeIn(null, false, f.r.checked);
   };
-  $('.v3', join).onsubmit = e => {   // prototype: nothing is sent
+  $('.v3', join).onsubmit = e => {   // demo: nothing is sent; the app: the server e-mails a reset link
     e.preventDefault(); const f = e.target, m = f.e.value.trim();
     if (!okMail(m)) { shake(f.e.closest('.jf')); f.e.focus(); return toast('อีเมลยังไม่ถูกต้อง'); }
+    if (CLOUD.on) return busy(f, async () => { await CLOUD.reset(m); SFX.chime(); toast(`ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ${m} แล้ว`); view(2); });
     SFX.chime(); toast(`ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่ ${m} แล้ว`); view(2);
   };
   /* profile setup after the first login (brief 15.10.69): one question per page — photo · username · birthday (→ real age) · gender · caption.
@@ -243,14 +256,14 @@ LIFE.welcome = pg => {
           <label class="ph press"><img src="${photo || 'assets/w_avatar.webp'}" alt=""><i class="cam">${T2.ic.photo}</i><input type="file" accept="image/*" hidden></label>
           <span class="shint">แตะรูปเพื่อเลือกจากเครื่อง</span></section>
         <section><b class="sq">ชื่อของคุณใน Eli's World</b><p>ชื่อนี้เพื่อน ๆ จะเห็นใน Hero Hall</p>
-          <input class="in" id="suName" maxlength="24" value="${C.name}" placeholder="username"></section>
+          <input class="in" id="suName" maxlength="24" value="${esc(C.name)}" placeholder="username"></section>
         <section><b class="sq">วันเดือนปีเกิด</b><p>ใช้คำนวณอายุจริง เพื่อเทียบกับ Eli Bio-age</p>
           <input class="in" type="date" id="suBirth" value="${C.birth || ''}" max="${new Date().toISOString().slice(0, 10)}">
           <div class="age">อายุจริง <b id="suAge">${C.birth ? ageOf(C.birth) : '–'}</b> ปี <small id="suTh">${th(C.birth)}</small></div></section>
         <section><b class="sq">เพศสภาพ</b><p>เลือกได้ 1 ข้อ</p>
           <div class="seg"><button type="button" data-g="f" class="${gender === 'f' ? 'on' : ''}">หญิง</button><button type="button" data-g="m" class="${gender === 'm' ? 'on' : ''}">ชาย</button></div></section>
         <section><b class="sq">แคปชั่นของคุณ</b><p>เล่าเกี่ยวกับตัวเองสั้น ๆ</p>
-          <textarea class="in" id="suBio" rows="3" maxlength="150" placeholder="เช่น สายเดินยามเช้า ☀️">${C.bio || ''}</textarea><em class="cnt" id="suCnt">${(C.bio || '').length}/150</em></section>
+          <textarea class="in" id="suBio" rows="3" maxlength="150" placeholder="เช่น สายเดินยามเช้า ☀️">${esc(C.bio)}</textarea><em class="cnt" id="suCnt">${(C.bio || '').length}/150</em></section>
       </div></div>
       <button class="jb p press nx" type="button">ถัดไป</button></div>`;
     pg.append(w); later(20, () => w.classList.add('on'));
@@ -283,13 +296,25 @@ LIFE.welcome = pg => {
       if (step === 3 && !gender) { shake($('.seg', w)); return toast('เลือกเพศสภาพก่อนนะ'); }
       if (step < N - 1) { step++; SFX.pop(); buzz(8); return paint(); }
       const bd = $('#suBirth', w).value;
-      Object.assign(C, { name: $('#suName', w).value.trim(), birth: bd, age: ageOf(bd), gender, bio: $('#suBio', w).value.trim(), photo, setup: true });
-      try { saveG(); } catch (e) { C.photo = null; saveG(); }
-      SFX.levelup(); buzz([20, 30, 20]); w.classList.remove('on'); later(300, () => { w.remove(); done(); });
+      const f = { name: $('#suName', w).value.trim(), birth: bd, gender, bio: $('#suBio', w).value.trim() };
+      const fin = () => {
+        Object.assign(C, f, { age: ageOf(bd), photo, setup: true });
+        try { saveG(); } catch (e) { C.photo = null; saveG(); }
+        SFX.levelup(); buzz([20, 30, 20]); w.classList.remove('on'); later(300, () => { w.remove(); done(); });
+      };
+      if (!CLOUD.on) return fin();
+      nx.disabled = true; nx.textContent = 'กำลังบันทึก…';
+      CLOUD.saveProfile({ ...f, avatar: photo, setup: true }).then(fin).catch(e => { nx.disabled = false; nx.textContent = 'บันทึก'; SFX.sad(); toast(e.message); });
     };
   };
   $$('[data-so]', join).forEach(b => b.onclick = () => {
     if (join.classList.contains('busy')) return; join.classList.add('busy'); b.classList.add('wait'); SFX.pop();
+    if (CLOUD.on) {   // the real app: Sign in with Apple (the only social sign-in set up so far)
+      const t = $('span', b).textContent; $('span', b).textContent = `กำลังเชื่อมต่อ ${b.dataset.n}…`;
+      const done = () => { join.classList.remove('busy'); b.classList.remove('wait'); $('span', b).textContent = t; };
+      return NATIVE.appleSignIn().then(a => CLOUD.signInApple(a.token, a.nonce).then(() => { done(); welcomeIn(a.name, !G.citizen.setup); }))
+        .catch(e => { done(); if (!e.cancelled) { SFX.sad(); toast(e.message || 'เข้าสู่ระบบด้วย Apple ไม่สำเร็จ'); } });
+    }
     $('span', b).textContent = `กำลังเชื่อมต่อ ${b.dataset.n}…`;
     later(1000, () => { join.classList.remove('busy'); welcomeIn(null, true); });
   });

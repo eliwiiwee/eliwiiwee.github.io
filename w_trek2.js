@@ -19,9 +19,22 @@ const T2 = {
     lock: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>',
   },
   speed: (m, s) => s > 0 ? (m / 1000) / (s / 3600) : 0,               // km/h
+  // heart-rate zones (client 2026-10-18 "สรุป zone การวิ่ง"): % of max HR, max HR = 220 − real age
+  ZONES: [
+    { n: 'วอร์มอัพ', d: 'เบาสบาย ฟื้นตัว', lo: 0, hi: .6, c: '#9AA7C7' },
+    { n: 'เผาผลาญไขมัน', d: 'คุยได้สบาย ๆ', lo: .6, hi: .7, c: '#4FA3E0' },
+    { n: 'แอโรบิก', d: 'เพิ่มความอึด หัวใจแข็งแรง', lo: .7, hi: .8, c: '#36B44B' },
+    { n: 'เทรสโฮลด์', d: 'หนักขึ้น เพิ่มความเร็ว', lo: .8, hi: .9, c: '#F6A623' },
+    { n: 'สูงสุด', d: 'เต็มกำลัง ช่วงสั้น ๆ', lo: .9, hi: 9, c: '#E8453C' },
+  ],
+  hrMax: () => 220 - (G.citizen.age || 32),
+  zoneOf: hr => { const r = hr / T2.hrMax(); return Math.max(0, T2.ZONES.findIndex(z => r >= z.lo && r < z.hi)); },
+  // prototype heart rate: rises through the warm-up, then drifts up and down like a real run (so every zone shows up)
+  hrSim: sec => Math.round(100 + Math.min(1, sec / 300) * 48 + Math.sin(sec / 90) * 14 + Math.sin(sec / 23) * 6 + Math.random() * 4),
   pace: (m, s) => m > 0 ? s / (m / 1000) : 0,                          // seconds per km
   paceTxt: (m, s) => { if (m < 50) return '–:––'; const p = Math.min(5999, Math.round(T2.pace(m, s))); return `${Math.floor(p / 60)}:${String(p % 60).padStart(2, '0')}`; },   // 6:08 (min/km)
   say(text) {   // spoken summary (Thai voice if the device has one), falls back silently
+    if (window.NATIVE && NATIVE.say(text)) return;   // the app: the system voice (keeps talking with the screen off)
     try {
       const u = new SpeechSynthesisUtterance(text); u.lang = 'th-TH'; u.rate = 1.02;
       const v = speechSynthesis.getVoices().find(v => /th/i.test(v.lang)); if (v) u.voice = v;
@@ -157,14 +170,29 @@ LIFE.trek = pg => {
 LIFE.trekdone = pg => {
   pg.classList.add('t2-post');
   const real = RUN.m > 50, km = real ? RUN.m / 1000 : 2.07, sec = real ? RUN.sec : 760, pc = T2.paceTxt(km * 1000, sec);   // opened straight from a link → sample numbers
-  const hr = RUN.hrN ? Math.round(RUN.hr / RUN.hrN) : 142, steps = Math.round(km * 1283), lp = Math.max(12, Math.round(km * 14.3));
+  const hr = RUN.hrN ? Math.round(RUN.hr / RUN.hrN) : RUN.native ? '–' : 142, steps = Math.round(km * 1283), lp = Math.max(12, Math.round(km * 14.3));
+  // the zone summary: time in each heart-rate zone (opened straight from a link → a sample split)
+  const zsec = RUN.zones && RUN.zones.some(Boolean) ? RUN.zones : [.08, .22, .38, .24, .08].map(f => Math.round(f * sec));
+  const zoneCard = () => {
+    if (RUN.native && !(RUN.zones && RUN.zones.some(Boolean))) return '';   // the app: no heart rate from a watch → no zone card
+    const tot = zsec.reduce((a, b) => a + b, 0) || 1, mx = T2.hrMax(), top = zsec.indexOf(Math.max(...zsec)), Z = T2.ZONES;
+    const bpm = z => z.lo === 0 ? `< ${Math.round(mx * z.hi)}` : z.hi > 1 ? `${Math.round(mx * z.lo)}+` : `${Math.round(mx * z.lo)}–${Math.round(mx * z.hi) - 1}`;
+    return `<section class="pp-zone">
+      <div class="zh"><b>สรุปโซนการวิ่ง</b><span>♥ สูงสุดของคุณ ${mx} bpm</span></div>
+      <div class="zbar">${zsec.map((s, i) => s ? `<i style="flex:${s};background:${Z[i].c}"></i>` : '').join('')}</div>
+      <div class="ztop" style="--c:${Z[top].c}"><i>Z${top + 1}</i><span>ส่วนใหญ่อยู่ใน <b>โซน ${top + 1} · ${Z[top].n}</b><small>${Z[top].d}</small></span></div>
+      ${Z.map((z, i) => { const p = Math.round(zsec[i] / tot * 100); return `<div class="zr ${i === top ? 'on' : ''}">
+        <i class="zn" style="background:${z.c}">Z${i + 1}</i><span class="zl"><b>${z.n}</b><small>${bpm(z)} bpm</small></span>
+        <span class="zp"><i style="width:${p}%;background:${z.c}"></i></span><span class="zt"><b>${clock(zsec[i])}</b><small>${p}%</small></span></div>`; }).join('')}
+    </section>`;
+  };
   // ELi stickers on the picture (client 2026-10-15): the client's original drawings only — pick any, drag to move, pull the corner / pinch / slider to resize
   const STK = [['eli_happy', 'ยิ้ม'], ['eli_run', 'วิ่ง'], ['eli_music', 'ฟังเพลง'], ['eli_sick', 'ไม่สบาย']];
   const P = { photo: null, style: 'sticker', vis: 'pub', stk: [{ k: 0, x: 870, y: 820, s: 360 }], sel: -1 };   // starts where ELi sat on the card
   pg.innerHTML = `
     <div class="pp-bar"><button class="pp-x" id="ppX" aria-label="ปิด">✕</button><b>โพสต์กิจกรรม</b><button class="pp-ok" id="ppSave2">บันทึก</button></div>
     <div class="pp-scroll">
-      <div class="pp-me"><img src="${G.citizen.photo || 'assets/w_avatar.webp'}" alt=""><div><b>${G.citizen.name}</b><span>${RUN.sport} · วันนี้</span></div></div>
+      <div class="pp-me"><img src="${safeImg(G.citizen.photo)}" alt=""><div><b>${esc(G.citizen.name)}</b><span>${RUN.sport} · วันนี้</span></div></div>
       <div class="pp-pic" id="ppPic"><canvas id="ppCv" width="1080" height="1350"></canvas><div class="pp-stk" id="ppStk"></div>
         <label class="pp-pick press">${T2.ic.photo}<span>เลือกรูปภาพ</span><input type="file" accept="image/*" id="ppFile" hidden></label></div>
       <div class="pp-stkbar"><div class="hd"><b>สติกเกอร์น้อง eli</b><span>แตะเพื่อใส่ในภาพ · ลากเพื่อย้าย</span></div>
@@ -175,6 +203,7 @@ LIFE.trekdone = pg => {
       <div class="pp-stats">
         <div class="big"><b>${km.toFixed(2)}</b><span>กม.</span></div>
         <div><b>${clock(sec)}</b><span>เวลา</span></div><div><b>${pc}</b><span>เพซ /กม.</span></div><div><b>${hr}</b><span>♥ เฉลี่ย</span></div></div>
+      ${zoneCard()}
       <label class="pp-cap"><textarea id="ppCap" rows="3" maxlength="300" placeholder="เขียนแคปชั่น… วันนี้รู้สึกยังไงบ้าง?"></textarea></label>
       <div class="pp-row"><b>การมองเห็น</b>
         <div class="pp-vis" id="ppVis"><button data-v="pub" class="on">${T2.ic.globe}สาธารณะ</button><button data-v="fr">${T2.ic.ppl}เพื่อน</button><button data-v="me">${T2.ic.lock}เฉพาะฉัน</button></div></div>
@@ -205,15 +234,34 @@ LIFE.trekdone = pg => {
     placeStk();
   };
   const draw = () => { drawBase(); paint(); };
+  // the GPS route (lat/lon points) fitted into a box, north up — like the runner's own track, no basemap
+  const drawRoute = (pts, [x0, y0, x1, y1], col) => {
+    const k = Math.cos(pts[0][0] * Math.PI / 180), xs = pts.map(p => p[1] * k), ys = pts.map(p => -p[0]);
+    const mx = Math.min(...xs), my = Math.min(...ys), w = Math.max(...xs) - mx || 1e-9, h = Math.max(...ys) - my || 1e-9;
+    const sc = Math.min((x1 - x0) / w, (y1 - y0) / h), ox = x0 + ((x1 - x0) - w * sc) / 2, oy = y0 + ((y1 - y0) - h * sc) / 2;
+    const P2 = xs.map((x, i) => [ox + (x - mx) * sc, oy + (ys[i] - my) * sc]);
+    const line = () => { cx.beginPath(); P2.forEach(([x, y], i) => i ? cx.lineTo(x, y) : cx.moveTo(x, y)); };
+    cx.lineJoin = cx.lineCap = 'round';
+    line(); cx.strokeStyle = col === '#fff' ? 'rgba(0,0,0,.35)' : 'rgba(255,255,255,.95)'; cx.lineWidth = 30; cx.stroke();
+    line(); cx.strokeStyle = col; cx.lineWidth = 16; cx.stroke();
+    const dot = ([x, y], fill) => { cx.beginPath(); cx.arc(x, y, 22, 0, 7); cx.fillStyle = '#fff'; cx.fill(); cx.beginPath(); cx.arc(x, y, 14, 0, 7); cx.fillStyle = fill; cx.fill(); };
+    dot(P2[0], '#2FB36B'); dot(P2[P2.length - 1], col === '#fff' ? '#2A3B9C' : col);   // start green, finish in the line colour
+  };
   const drawBase = () => {
     const W = 1080, Hh = 1350, F = '"Comfortaa","Noto Sans Thai",sans-serif';
     cx.clearRect(0, 0, W, Hh);
+    const real = RUN.native, route = real && RUN.route && RUN.route.length > 1 ? RUN.route : null;   // the app never shows the sample route
     if (P.photo) cover(P.photo, 0, 0, W, Hh);
-    else { cx.fillStyle = '#F4EFE6'; cx.fillRect(0, 0, W, Hh); if (A.map) cover(A.map, 0, 0, W, Hh); }
+    else {
+      cx.fillStyle = '#F4EFE6'; cx.fillRect(0, 0, W, Hh);
+      if (!real && A.map) cover(A.map, 0, 0, W, Hh);
+      else { cx.fillStyle = 'rgba(42,59,156,.07)'; for (let y = 60; y < Hh; y += 60) for (let x = 60; x < W; x += 60) cx.fillRect(x - 3, y - 3, 6, 6); }   // dot grid under the real route
+    }
     const st = P.style, light = st === 'minimal' && !P.photo;
     if (st === 'classic' || st === 'gold') { const g = cx.createLinearGradient(0, Hh * .45, 0, Hh); g.addColorStop(0, 'rgba(15,20,60,0)'); g.addColorStop(1, st === 'gold' ? 'rgba(40,25,0,.82)' : 'rgba(15,20,60,.85)'); cx.fillStyle = g; cx.fillRect(0, 0, W, Hh); }
+    if (route) drawRoute(route, st === 'minimal' ? [150, 200, W - 150, 470] : [110, 210, W - 110, Hh - 470], P.photo ? '#fff' : st === 'gold' ? '#C99A1E' : '#2A3B9C');
     // brand watermark (logo, top-left)
-    const wm = st === 'gold' ? '#F6C343' : (light ? '#2A3B9C' : '#fff');
+    const wm = st === 'gold' ? '#F6C343' : (light || (real && !P.photo) ? '#2A3B9C' : '#fff');   // blue on the plain cream route background
     if (A.mark) { const m = tint(A.mark, wm, 110); cx.globalAlpha = .95; cx.drawImage(m, 60, 56); cx.globalAlpha = 1; }
     cx.fillStyle = wm; cx.font = `700 34px ${F}`; cx.fillText("eli's world", 186, 120);
     const kmS = km.toFixed(2), t = clock(sec), v = pc;
@@ -298,17 +346,27 @@ LIFE.trekdone = pg => {
   $$('#ppStyles button', pg).forEach(b => b.onclick = () => { P.style = b.dataset.s; $$('#ppStyles button', pg).forEach(x => x.classList.toggle('on', x === b)); draw(); SFX.pop(); });
   $$('#ppVis button', pg).forEach(b => b.onclick = () => { P.vis = b.dataset.v; $$('#ppVis button', pg).forEach(x => x.classList.toggle('on', x === b)); SFX.pop(); });
   $('#ppX', pg).onclick = () => go('trek');
-  const save = () => {
-    G.today.steps += steps; G.total = (G.total || 0) + lp; G.coins += 1; saveG();
-    celebrate();
+  let saving = false;
+  const save = async () => {
+    if (saving) return; saving = true;
+    if (!CLOUD.on) { G.today.steps += steps; G.total = (G.total || 0) + lp; G.coins += 1; saveG(); return celebrate(lp, 1); }
+    // the app: the run is stored and rewarded by the server (Health already counts its steps)
+    const bs = [$('#ppSave', pg), $('#ppSave2', pg)].filter(Boolean), was = bs.map(b => b.textContent);
+    bs.forEach(b => { b.disabled = true; b.textContent = 'กำลังบันทึก…'; });
+    try {
+      const r = await CLOUD.run({ sec, meters: Math.round(RUN.m), sport: RUN.sport, started_at: RUN.t0 ? new Date(RUN.t0).toISOString() : null,
+        hr_avg: RUN.hrN ? hr : null, zones: RUN.zones && RUN.zones.some(Boolean) ? RUN.zones : null, route: RUN.route || null,
+        caption: $('#ppCap', pg)?.value || '', visibility: { pub: 'public', fr: 'friends', me: 'private' }[P.vis] || 'public' });
+      celebrate(r.lp, r.coin);
+    } catch (e) { saving = false; bs.forEach((b, i) => { b.disabled = false; b.textContent = was[i]; }); SFX.sad(); toast(e.message); }
   };
   $('#ppSave', pg).onclick = save; $('#ppSave2', pg).onclick = save;
 
   /* ── ELi celebrates (like a level-up), then share / save the picture ── */
-  const celebrate = () => {
+  const celebrate = (gotLp, gotCoin) => {
     const ov = document.createElement('div'); ov.className = 't2-yay';
     ov.innerHTML = `<i class="rays"></i><div class="t">สุดยอดไปเลย!</div><div class="s">วันนี้คุณ${RUN.sport}ได้ <b>${km.toFixed(2)} กม.</b><br>น้อง eli ภูมิใจในตัวคุณมาก ๆ 💙</div>
-      <div class="stage"></div><div class="gain"><span>+${lp} <small>Life Power</small></span><span><img src="assets/c3_face.png" alt="">+1 <small>coin</small></span></div>
+      <div class="stage"></div><div class="gain">${gotLp ? `<span>+${gotLp} <small>Life Power</small></span>` : ''}${gotCoin ? `<span><img src="assets/c3_face.png" alt="">+${gotCoin} <small>coin</small></span>` : ''}${gotLp ? '' : '<span><small>วันนี้รับรางวัลการวิ่งครบ 3 ครั้งแล้ว</small></span>'}</div>
       <button class="go press">ไปแชร์กัน!</button>`;
     $('#app').append(ov); later(20, () => ov.classList.add('on'));
     const e = new Eli($('.stage', ov), { size: 210, x: 195, y: 230 });
@@ -326,11 +384,14 @@ LIFE.trekdone = pg => {
       <button class="pp-dl press" id="ppDl">${T2.ic.down}บันทึกรูปลงเครื่อง</button>
       <button class="pp-done" data-close id="ppDone">เสร็จแล้ว</button>`, sh => {
       $('#ppSh', sh).onclick = async () => {
-        const b = await blob(), f = new File([b], 'eli-run.png', { type: 'image/png' }), cap = $('#ppCap', pg)?.value || '';
+        const cap = $('#ppCap', pg)?.value || '';
+        if (window.NATIVE) return NATIVE.shareImage(cv.toDataURL('image/png'), cap);   // the app: the system share sheet (IG, LINE, Facebook …)
+        const b = await blob(), f = new File([b], 'eli-run.png', { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], text: cap }); } catch (e) {} }
         else toast('อุปกรณ์นี้แชร์ไฟล์ไม่ได้ · กดบันทึกรูปลงเครื่องแทนนะ');
       };
       $('#ppDl', sh).onclick = async () => {
+        if (window.NATIVE) return NATIVE.saveImage(cv.toDataURL('image/png')).then(ok => toast(ok ? 'บันทึกรูปลงเครื่องแล้ว ✓' : 'บันทึกรูปไม่สำเร็จ'));
         const b = await blob(), u = URL.createObjectURL(b), a = document.createElement('a');
         a.href = u; a.download = `eli-run-${new Date().toISOString().slice(0, 10)}.png`; document.body.append(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(u), 4000); toast('บันทึกรูปแล้ว ✓');

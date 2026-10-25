@@ -4,7 +4,7 @@
 LIFE.dream = pg => {
   pg.classList.add('w-dream');
   const W = Math.max(390, Math.round((appH - 259) / 1.5)), s = W / 1024;
-  const h = G.today.sleep, st = sleepStages(h), tot = st.d + st.l + st.r, q = sleepQuality(h);
+  const h = G.today.sleep, st = G.today.sleepStages || sleepStages(h), tot = st.d + st.l + st.r, q = sleepQuality(h);
   const ready = h >= 7 && !G.today.dreamChest;
   pg.innerHTML = `
     <img class="dr-bgc" src="assets/dr_bg.webp" alt="">
@@ -37,10 +37,16 @@ LIFE.dream = pg => {
   };
   every(5200, () => { if (!pg.classList.contains('bed')) eli.squash(.035, 1400); });
   const chest = $('#drChest', pg);
-  chest.onclick = () => {
+  chest.onclick = async () => {
     if (G.today.dreamChest) return toast('เปิดหีบของคืนนี้ไปแล้ว พรุ่งนี้มาใหม่นะ 🌙');
     if (G.today.sleep < 7) { chest.classList.remove('shake'); void chest.offsetWidth; chest.classList.add('shake'); SFX.sad(); return toast(`เมื่อคืนนอน ${G.today.sleep} ชม. — ต้องนอนให้ครบ 7 ชม. ก่อนนะ`); }
-    G.today.dreamChest = true; const n = 3 + Math.round(Math.random() * 4); saveG();
+    let n = 3 + Math.round(Math.random() * 4);
+    if (CLOUD.on) {   // the app: the server rolls the coins (and checks last night's sleep)
+      if (chest.classList.contains('wait')) return; chest.classList.add('wait');
+      try { n = await CLOUD.claim('chest'); } catch (e) { chest.classList.remove('wait'); return toast(e.message); }
+      chest.classList.remove('wait');
+    }
+    G.today.dreamChest = true; saveG();
     chest.classList.add('done'); $('#drLbl', pg).innerHTML = `ได้ +${n} coins 🎉<br>ฝันดีทุกคืนนะ`;
     SFX.coin(); buzz([20, 40, 20]); burst(stage, 912 * s, 540 * s, { n: 22, dist: 70, size: 6, colors: ['#F7D47A', '#FFE9A8', '#fff'] });
     giveCoins(n, 'dream', chest);

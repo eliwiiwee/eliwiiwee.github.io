@@ -14,6 +14,10 @@ if (G.citizen.name === 'สายสุขภาพ') G.citizen.name = "พล�
 if (!G.citizen.birth) { const y = new Date().getFullYear() - (G.citizen.age || 32); G.citizen.birth = `${y}-05-12`; }
 const ageOf = b => { const d = new Date(b), n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n.getMonth() < d.getMonth() || (n.getMonth() === d.getMonth() && n.getDate() < d.getDate())) a--; return isNaN(a) ? 32 : Math.max(1, a); };
 G.citizen.age = ageOf(G.citizen.birth);
+// text people typed (names, captions — their own or other members' in Hero Hall) goes into HTML only through esc()
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// a profile photo is a data:image/… URL from this app (or an https link); anything else shows the default avatar
+const safeImg = s => /^(data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+|https:\/\/[^"'<>\s]+|assets\/[\w./-]+)$/.test(s || '') ? s : 'assets/w_avatar.webp';
 const wi = (n, c = '') => `<img class="mk ${c}" src="assets/${n}.png" alt="">`;
 const wcoins = () => fmt(G.coins);
 // Eli Bio-age: younger when today's Life Power habits are on track (walk + sleep + care), older when they slip

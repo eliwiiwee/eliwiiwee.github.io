@@ -546,8 +546,14 @@ function fit() {
     setH(844, 390);
   }
 }
+// the phone keyboard only changes the height: re-rendering then would wipe what is being typed (the setup wizard, forms)
+let kbAt = 0;
+const typing = () => { const e = document.activeElement; return !!e && (/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName) || e.isContentEditable); };
+addEventListener('focusin', () => { if (typing()) kbAt = Date.now(); });
+addEventListener('focusout', e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) kbAt = Date.now(); });
 function setH(H, W = 390) {
-  const app = $('#app'), changed = Math.abs(H - appH) > 4 || Math.abs(W - appW) > 4;
+  const app = $('#app'), kb = Math.abs(W - appW) <= 4 && (typing() || Date.now() - kbAt < 1500);
+  const changed = !kb && (Math.abs(H - appH) > 4 || Math.abs(W - appW) > 4);
   appH = H; appW = W;
   app.style.setProperty('--H', H + 'px'); app.style.setProperty('--W', W + 'px'); app.style.setProperty('--ex', (W - 390) / 2 + 'px');
   app.classList.toggle('short', H < 760);
@@ -574,4 +580,5 @@ const start = location.hash.slice(1);
 const AWQ = new URLSearchParams(location.search).get('away');   // preview the come-back notification
 if (AWQ) setTimeout(() => awayDemo(AWQ), 1200);
 go(R[start] && (G.member || start === 'welcome') ? start : 'welcome');   // not signed in (or remember me was off) → the welcome page asks to sign in
+if (CLOUD.on) CLOUD.boot();   // the app: check the stored sign-in and load the real state
 addEventListener('hashchange', () => { const h = location.hash.slice(1); if (R[h] && h !== cur) go(h); });

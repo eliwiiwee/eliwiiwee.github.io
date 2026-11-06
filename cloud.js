@@ -20,10 +20,13 @@ const CLOUD = (() => {
     [/out_of_stock/, 'ของรางวัลชิ้นนี้หมดแล้ว'],
     [/no_product/, 'ของรางวัลชิ้นนี้ไม่มีแล้ว'],
     [/garden_done/, 'เก็บเหรียญในสวนครบแล้ววันนี้'],
+    [/garden_steps/, 'เหรียญยังไม่งอก เดินเพิ่มอีกนิดนะ'],
+    [/welcome_done/, 'รับเหรียญต้อนรับไปแล้ว'],
     [/chest_done/, 'เปิดหีบของคืนนี้ไปแล้ว'],
     [/chest_sleep/, 'ต้องนอนให้ครบ 7 ชม. ก่อนนะ'],
     [/no_shield/, 'หมดเวลาใช้น้ำยาแล้ว'],
     [/no_such_code/, 'ไม่พบรหัสเชิญนี้ ลองตรวจตัวอักษรอีกครั้ง'],
+    [/too_many_reports/, 'วันนี้รายงานครบจำนวนแล้ว ลองใหม่พรุ่งนี้นะ'],
     [/last_owner/, 'บัญชีนี้เป็นเจ้าของหลังบ้านคนสุดท้าย — โอนสิทธิ์เจ้าของให้คนอื่นก่อนลบ'],
     [/suspended|user is banned/i, 'บัญชีนี้ถูกระงับการใช้งาน ติดต่อ LINE @eliofficial'],
     [/bad_address/, 'กรอกชื่อ เบอร์โทร และที่อยู่ให้ครบนะ'],
@@ -58,6 +61,8 @@ const CLOUD = (() => {
       c3: t.garden || 0, dreamChest: t.chest != null, coinWalk: (t.steps || 0) >= 7000, coinSleep: sleep >= 7 && sleep <= 9, bonus: t.bonus || 0 });
     G.day = s.today_date;
     G.inviteCode = p.invite_code; G.event = s.event || null;
+    if (s.rules) G.rules = { gardenMax: +s.rules.garden_max, gardenSteps: +s.rules.garden_steps, welcome: +s.rules.welcome_coins };
+    if (s.welcome_paid != null) G.welcomePaid = !!s.welcome_paid;
     Object.assign(G, { coins: p.coins, total: p.total_lp, streak: p.streak, away: p.away_days, awayLost: p.away_lost, hallHidden: p.hall_hidden,
       vital: p.away_days >= 7 ? 'lonely' : p.away_days >= 3 ? 'sleepy' : 'happy',
       shield: p.shield_streak && p.away_days && p.away_days <= 3 ? { d: p.shield_streak, n: p.away_days } : null });
@@ -132,7 +137,7 @@ const CLOUD = (() => {
     },
     // news from the eli team + a running coin event: each shown once (seen ids kept on this phone)
     async greet() {
-      if (cur !== 'world' || $('#sheet:not([hidden])')) return;
+      if (cur !== 'world' || $('#sheet:not([hidden])') || GUIDE.busy()) return;   // (a tour on screen calls this again when it ends)
       const seen = (() => { try { return JSON.parse(localStorage.getItem('eli_seen') || '[]'); } catch (e) { return []; } })();
       const mark = id => { seen.push(id); try { localStorage.setItem('eli_seen', JSON.stringify(seen.slice(-50))); } catch (e) {} };
       const ev = G.event, evKey = ev && `ev:${ev.name}:${ev.ends_at}`;
@@ -147,10 +152,18 @@ const CLOUD = (() => {
     load,
     // steps / sleep (from Health) and petting; quest coins are paid by the server
     day(a) { merge(pending, a); clearTimeout(timer); timer = setTimeout(() => flush().catch(() => {}), a.pet ? 0 : 1500); },
-    async claim(kind) { const s = apply(await rpc('claim', { p_kind: kind })); return s.got; },
+    async claim(kind) {
+      if (timer) await flush().catch(() => {});   // steps still waiting to be sent first: a garden coin grows from them
+      const s = apply(await rpc('claim', { p_kind: kind })); return s.got;
+    },
     async run(r) { const s = apply(await rpc('log_run', { p: r })); return { lp: s.lp, coin: s.coin, id: s.run_id }; },
     async heart(id) { apply(await rpc('send_heart', { p_to: id })); },
     async shield(use) { apply(await rpc(use ? 'use_shield' : 'drop_shield')); },
+    // Hero Hall: report someone's name / photo to the eli team, block / unblock them
+    async report(id, reason, note) { await rpc('report_user', { p_target: id, p_reason: reason, p_note: note || '' }); },
+    async block(id) { await rpc('block_user', { p_target: id }); },
+    async unblock(id) { await rpc('unblock_user', { p_target: id }); },
+    async blocks() { return rpc('my_blocks'); },
     async addFriend(code) { return rpc('add_friend', { p_code: String(code).replace(/[^0-9a-z]/gi, '').toUpperCase() }); },
     async hall() {
       const rows = await rpc('hall');

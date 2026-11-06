@@ -133,9 +133,21 @@ LIFE.welcome = pg => {
     ['fb', 'Facebook', '<path d="M13.6 21.5v-7.6h2.6l.4-3h-3V9c0-.9.2-1.5 1.5-1.5h1.6V4.8c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.9v3h2.6v7.6z"/>'],
     ['apple', 'Apple', '<path d="M16.4 12.7c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.6c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/>'],
   ];
+  // first time on this phone: 3 cards say what Eli's World is before the sign-up (client feedback 2026-11-06)
+  const INTRO = [
+    [['hd_world'], "Eli's World คืออะไร?", 'แอปที่เปลี่ยน<b>การเดินและการนอน</b>ของคุณ ให้เป็นพลังเลี้ยงน้อง ELi<br>ยิ่งดูแลตัวเองดี น้องยิ่งโต', 'สวัสดี! หนูชื่อ ELi 💙'],
+    [['hd_shoe', 'hd_sleep'], 'ทุกวัน: เดิน · นอน · ลูบน้อง', 'เดินครบ 7,000 ก้าว นอน 7–9 ชม. ได้ <b>Life Power</b><br>เลเวลขึ้น แล้วไปแข่งกับเพื่อนใน Hero Hall', 'เดินกับนอนดี ๆ หนูจะโตขึ้นนะ'],
+    [['hd_coin', 'hd_treasury'], 'เก็บเหรียญ แลกของจริง', 'ทำภารกิจได้ <b>Eli Coins</b> เอาไปแลกเสื้อ หมวก<br>และคูปองพาร์ทเนอร์ใน Treasury', 'มีของรางวัลรออยู่ด้วยนะ!'],
+  ];
   pg.insertAdjacentHTML('beforeend', `<div class="wl-join" id="wlJoin">
     <div class="jc">
       <i class="grab"></i>
+      <div class="v vi">
+        <div class="gi-steps"><div class="gi-rail">${INTRO.map(([ics, h, p]) => `<section><div class="gi-art">${ics.map(n => `<img src="assets/${n}.png" alt="">`).join('')}</div><b class="h">${h}</b><p>${p}</p></section>`).join('')}</div></div>
+        <div class="gi-dots">${'<i></i>'.repeat(INTRO.length)}</div>
+        <button class="jb p press gi-nx" type="button">ถัดไป</button>
+        <button class="jb t sm gi-skip" type="button">ข้าม</button>
+      </div>
       <div class="v v0 on">
         <b class="h">เข้าสู่ eli's world</b>
         ${SOC.map(([k, n, d]) => `<button class="jb so ${k} press" data-so="${k}" data-n="${n}"><svg viewBox="0 0 24 24" fill="currentColor">${d}</svg><span>ดำเนินการต่อด้วย ${n}</span></button>`).join('')}
@@ -194,8 +206,24 @@ LIFE.welcome = pg => {
     pg.classList.add('squeeze');
   };
   const view = v => { $$('.v', join).forEach(x => x.classList.toggle('on', x.classList.contains('v' + v))); if (v) setTimeout(() => $(`.v${v} input`, join)?.focus(), 350); later(30, lift); };
-  const openJoin = () => { join.classList.add('on'); SFX.pop(); lift(); };
+  const openJoin = () => { if (!GUIDE.st().intro) { view('i'); slide(0); } join.classList.add('on'); SFX.pop(); lift(); };
   $$('[data-v]', join).forEach(b => b.onclick = () => { SFX.pop(); view(+b.dataset.v); });
+  // the intro cards: ถัดไป / swipe, the last one (or ข้าม) opens the sign-up; seen once per phone
+  let ik = 0;
+  const slide = k => {
+    ik = Math.max(0, Math.min(INTRO.length - 1, k));
+    $('.gi-rail', join).style.transform = `translateX(${-ik * 100}%)`;
+    $$('.gi-dots i', join).forEach((d, i) => d.classList.toggle('on', i === ik));
+    $('.gi-nx', join).textContent = ik === INTRO.length - 1 ? 'เริ่มเลย' : 'ถัดไป';
+    $('.gi-skip', join).style.visibility = ik === INTRO.length - 1 ? 'hidden' : '';
+    if (done) { eli.say(INTRO[ik][3], 2200); if (ik) { eli.pose('cheer1'); eli.jump(22, 380).then(() => eli.pose('ready1')); } }
+  };
+  const introEnd = () => { GUIDE.st().intro = true; saveG(); SFX.pop(); view(0); };
+  $('.gi-nx', join).onclick = () => { if (ik < INTRO.length - 1) { SFX.pop(); buzz(8); slide(ik + 1); } else introEnd(); };
+  $('.gi-skip', join).onclick = introEnd;
+  { let x0 = null; const sw = $('.gi-steps', join);
+    sw.addEventListener('pointerdown', e => { x0 = e.clientX; });
+    sw.addEventListener('pointerup', e => { if (x0 == null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 40) { SFX.pop(); slide(ik + (dx < 0 ? 1 : -1)); } }); }
   // the first login creates the Eli Citizen ID: 6 digits, a running number (on the real backend the server hands it out)
   const newId = () => { let n = 1; try { n = +(localStorage.getItem('eli_cid_seq') || 0) + 1; localStorage.setItem('eli_cid_seq', n); } catch (e) {} return String(n).padStart(6, '0'); };
   const welcomeIn = (name, isNew = true, remember = true) => {

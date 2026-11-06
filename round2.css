@@ -152,6 +152,19 @@
 .h2-leg .lp{flex:none;text-align:right;font:800 14px/1.1 var(--num);color:#7A4A00}
 .h2-leg .lp small{display:block;font:700 9.5px var(--num);opacity:.8}
 .h2-note{margin:10px 6px 2px;font:500 11.5px/1.55 var(--f);color:#7A746E;text-align:center}
+.h2-row,.h2-leg{cursor:pointer}
+/* someone's card: report / block */
+.h2-who{display:flex;align-items:center;gap:14px;margin:0 0 16px}
+.h2-who .av{flex:none;width:64px;height:64px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--ring,#E4E0D8),0 3px 8px rgba(0,0,0,.14)}
+.h2-who .av img{width:100%;height:100%;object-fit:cover}
+.h2-who div{min-width:0}
+.h2-who h4{margin:0 0 4px;overflow-wrap:anywhere}
+.h2-who p{margin:0;font:600 13px var(--f);color:#7A746E}
+.h2-why{display:grid;gap:8px;margin:0 0 10px}
+.h2-why label{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border-radius:14px;background:#FBF9F6;box-shadow:0 0 0 1.5px #EFEAE3;font:700 14.5px var(--f);color:#1A1F3D;cursor:pointer}
+.h2-why label:has(input:checked){box-shadow:0 0 0 2px var(--wi,#3A5BDA);background:#F4F6FF}
+.h2-why input{width:18px;height:18px;margin:0;accent-color:var(--wi,#3A5BDA)}
+.h2-rnote{height:auto;min-height:64px;padding:10px 14px;font:500 14.5px/1.5 var(--f);resize:none}
 /* Daily Quest sheet: today's Life Power = base × streak multiplier */
 .wq-lp{margin:4px 0 12px;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,#F4F6FF,#E9ECFA);box-shadow:0 0 0 1px #DDE2F7}
 .wq-lp .h{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -175,6 +188,12 @@
 .s2-tg i::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
 .s2-tg input:checked+i{background:var(--wi)}
 .s2-tg input:checked+i::after{transform:translateX(18px)}
+.s2-blk{width:100%;border:0;font:inherit;text-align:left;color:inherit}
+.s2-blk em{flex:none;font:700 22px/1 var(--f);font-style:normal;color:#A9A29A}
+.s2-bl{display:flex;align-items:center;gap:12px;min-height:56px;border-bottom:1px solid #F0EBE4}
+.s2-bl img{flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover}
+.s2-bl b{flex:1;min-width:0;font:700 14.5px var(--f);color:#1A1F3D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s2-bl button{flex:none;height:36px;padding:0 14px;border:0;border-radius:18px;background:#EEF0F4;font:700 13px var(--f);color:#1A1F3D}
 /* Treasury: what I've redeemed (button + sheet) */
 .tr-hist{position:absolute;left:200px;top:49px;width:32px;height:32px;padding:4px;border:0;border-radius:50%;background:#fff;box-shadow:var(--wsh);cursor:pointer}
 .tr-hist img{width:100%;height:100%;object-fit:contain}

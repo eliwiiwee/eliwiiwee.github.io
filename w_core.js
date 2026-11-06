@@ -20,6 +20,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const safeImg = s => /^(data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+|https:\/\/[^"'<>\s]+|assets\/[\w./-]+)$/.test(s || '') ? s : 'assets/w_avatar.webp';
 const wi = (n, c = '') => `<img class="mk ${c}" src="assets/${n}.png" alt="">`;
 const wcoins = () => fmt(G.coins);
+// coin rules the server sends (the team changes them in the back office); the web demo uses these defaults
+const gRules = () => ({ gardenMax: 3, gardenSteps: 2000, welcome: 5, ...G.rules });
 // Eli Bio-age: younger when today's Life Power habits are on track (walk + sleep + care), older when they slip
 const bioAge = () => {
   const t = G.today, score = LPX.walk(t.steps) / 40 * .45 + LPX.sleep(t.sleep) / 40 * .4 + LPX.app(t) / 20 * .15;

@@ -17,7 +17,9 @@ LIFE.settings = pg => {
         <label class="s2-f"><span>วันเดือนปีเกิด</span><input type="date" id="s2Birth" value="${C.birth}" max="${new Date().toISOString().slice(0, 10)}"></label>
         <div class="s2-age"><span>อายุจริง</span><b id="s2Age">${C.age}</b><span>ปี</span><small id="s2BirthTh">${th(C.birth)}</small></div>
         <div class="s2-f"><span>เพศสภาพ</span><div class="s2-seg" id="s2Sex"><button data-g="f" class="${C.gender !== 'm' ? 'on' : ''}">หญิง</button><button data-g="m" class="${C.gender === 'm' ? 'on' : ''}">ชาย</button></div></div>
-        ${CLOUD.on ? `<label class="s2-tg"><span><b>แสดงฉันใน Hero Hall</b><small>ปิดแล้วคนอื่นจะไม่เห็นชื่อและ Life Power ของคุณ</small></span><input type="checkbox" id="s2Hall" ${G.hallHidden ? '' : 'checked'}><i></i></label>` : ''}
+        ${CLOUD.on ? `<label class="s2-tg"><span><b>แสดงฉันใน Hero Hall</b><small>ปิดแล้วคนอื่นจะไม่เห็นชื่อและ Life Power ของคุณ</small></span><input type="checkbox" id="s2Hall" ${G.hallHidden ? '' : 'checked'}><i></i></label>
+        <button class="s2-tg s2-blk" id="s2Blk" type="button"><span><b>คนที่บล็อกไว้</b><small>ยกเลิกการบล็อกได้ที่นี่</small></span><em>›</em></button>` : ''}
+        <button class="s2-tg s2-blk" id="s2Guide" type="button"><span><b>ดูวิธีเล่นอีกครั้ง</b><small>น้อง ELi จะพาดูทุกปุ่มใหม่ตั้งแต่ต้น</small></span><em>›</em></button>
       </section>
       <button class="s2-save press" id="s2Save">บันทึก</button>
       <button class="s2-out press" id="stOut">ออกจากระบบ</button>
@@ -38,6 +40,19 @@ LIFE.settings = pg => {
   };
   // the app: hiding from Hero Hall is saved at once (no need to press บันทึก)
   if (CLOUD.on) $('#s2Hall', pg).onchange = e => { const hide = !e.target.checked; SFX.pop(); CLOUD.saveProfile({ hall_hidden: hide }).then(() => toast(hide ? 'ซ่อนจาก Hero Hall แล้ว' : 'แสดงใน Hero Hall แล้ว')).catch(err => { e.target.checked = hide; toast(err.message); }); };
+  // people I blocked in Hero Hall → unblock
+  if (CLOUD.on) $('#s2Blk', pg).onclick = async () => {
+    SFX.pop(); let list; try { list = await CLOUD.blocks(); } catch (e) { return toast(e.message); }
+    const html = () => list.length ? list.map(p => `<div class="s2-bl" data-id="${esc(p.id)}"><img src="${safeImg(p.avatar || 'assets/w_avatar.webp')}" alt=""><b>${esc(p.name)}</b><button class="press">เลิกบล็อก</button></div>`).join('') : '<p class="wsheet-p">ยังไม่ได้บล็อกใคร</p>';
+    openSheet(`<h4>คนที่บล็อกไว้</h4><div id="s2BlL">${html()}</div><button class="btn press" data-close style="margin-top:8px">ปิด</button>`, sh => {
+      $('#s2BlL', sh).onclick = async e => {
+        const b = e.target.closest('button'); if (!b || b.disabled) return; b.disabled = true;
+        const id = b.closest('[data-id]').dataset.id;
+        try { await CLOUD.unblock(id); list = list.filter(p => p.id !== id); $('#s2BlL', sh).innerHTML = html(); toast('เลิกบล็อกแล้ว'); } catch (err) { b.disabled = false; toast(err.message); }
+      };
+    });
+  };
+  $('#s2Guide', pg).onclick = () => { SFX.pop(); GUIDE.replay(); };
   $('#s2Bio', pg).oninput = e => { $('#s2BioN', pg).textContent = `${e.target.value.length}/150`; };
   $('#s2Birth', pg).onchange = e => { $('#s2Age', pg).textContent = ageOf(e.target.value); $('#s2BirthTh', pg).textContent = th(e.target.value); };
   $$('#s2Sex button', pg).forEach(b => b.onclick = () => { gender = b.dataset.g; $$('#s2Sex button', pg).forEach(x => x.classList.toggle('on', x === b)); SFX.pop(); });

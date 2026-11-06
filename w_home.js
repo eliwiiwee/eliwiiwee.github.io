@@ -134,7 +134,7 @@ LIFE.world = pg => {
   hit.addEventListener('pointermove', () => {
     if (!petting) return; const n = performance.now(); acc += Math.min(80, n - last); last = n;
     if (Math.random() < .12) floatUp(pg, eli.x + (Math.random() - .5) * 60, eli.y - 120, '💙', 1);
-    if (acc > 2000 && !G.today.pet) { G.today.pet = true; saveG(); if (CLOUD.on) CLOUD.day({ pet: true }); SFX.levelup(); buzz([20, 30, 20]); eli.say('ชาร์จพลังใจเต็มแล้ว! +10 Life Power', 2000); burst(pg, eli.x, eli.y - 90, { n: 16, dist: 70, size: 6 }); $('#whBio', pg).textContent = bioAge(); }
+    if (acc > 2000 && !G.today.pet) { G.today.pet = true; saveG(); GUIDE.done('pet'); if (CLOUD.on) CLOUD.day({ pet: true }); SFX.levelup(); buzz([20, 30, 20]); eli.say('ชาร์จพลังใจเต็มแล้ว! +10 Life Power', 2000); burst(pg, eli.x, eli.y - 90, { n: 16, dist: 70, size: 6 }); $('#whBio', pg).textContent = bioAge(); }
   });
   const up = () => { if (!petting) return; petting = false; eli.pose(rest); eli.squash(.12, 320); acc = Math.max(0, acc - 400); };
   hit.addEventListener('pointerup', up); hit.addEventListener('pointercancel', up); hit.addEventListener('pointerleave', up);
@@ -147,17 +147,30 @@ LIFE.world = pg => {
   hit.addEventListener('pointerdown', aim); hit.addEventListener('pointermove', e => { if (petting) aim(e); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(n => hit.addEventListener(n, () => { push.tx = push.ty = 0; }));
   T3.eliLean(eli, { amt: 12, push: () => { push.x += (push.tx - push.x) * .18; push.y += (push.ty - push.y) * .18; return push; } });
-  // 3D coins wait on the lawn: tap → +1 Eli Coin (up to 5 a day)
-  const CAP = 5, coins = [];
+  // 3D coins on the lawn: tap → +1 Eli Coin. Client 2026-11-06 (no more free coins): one coin grows for every gardenSteps
+  // steps walked today, up to gardenMax a day. Until the next one is ready, a sprout above the ELi Run sign shows the steps left.
+  const { gardenMax: CAP, gardenSteps: PER } = gRules(), coins = [];
+  const grown = () => Math.min(CAP, PER > 0 ? Math.floor(G.today.steps / PER) : CAP);
+  const toNext = () => (grown() + 1) * PER - G.today.steps;
+  const [rx, ry] = coverPt(880, 1000), sx = Math.min(350, rx), sy = Math.min(H - 205, ry) - 80;   // (where the ELi Run sign is)
+  pg.insertAdjacentHTML('beforeend', `<button class="wh-sprout press" id="whSprout" style="left:${sx.toFixed(1)}px;top:${sy.toFixed(1)}px" aria-label="เหรียญงอกจากก้าวเดิน" hidden><img src="assets/fm_sprout.png" alt=""><span></span></button>`);
+  const sprout = $('#whSprout', pg);
+  const paintSprout = () => {
+    const got = (G.today.c3 || 0) + coins.length;
+    sprout.hidden = PER <= 0 || got >= CAP || got < grown();   // nothing more grows today, or a coin is already waiting
+    if (!sprout.hidden) $('span', sprout).textContent = `อีก ${fmt(toNext())} ก้าว`;
+  };
+  sprout.onclick = () => { SFX.pop(); openSheet(`<h4>เหรียญงอกจากก้าวเดิน 🌱</h4><p class="wsheet-p">เดินครบทุก <b>${fmt(PER)} ก้าว</b> จะมีเหรียญงอกในสวน 1 เหรียญ แตะเพื่อเก็บ วันละไม่เกิน ${CAP} เหรียญ<br>วันนี้เดินแล้ว ${fmt(G.today.steps)} ก้าว · อีก <b>${fmt(toNext())} ก้าว</b> เหรียญถัดไปจะงอก</p><button class="btn btn-d press" data-close>เข้าใจแล้ว</button>`); };
   const spot = () => {
     for (let k = 0; k < 30; k++) {
       const x = 50 + Math.random() * 290, y = top + 70 + Math.random() * Math.max(40, bottom - top - 80);
-      if (Math.hypot(x - eli.x, y - eli.y + 60) > 90 && coins.every(c => Math.hypot(x - c.x, y - c.y) > 70)) return [x, y];
+      if (Math.hypot(x - eli.x, y - eli.y + 60) > 90 && Math.hypot(x - sx, y - sy + 30) > 70 && coins.every(c => Math.hypot(x - c.x, y - c.y) > 70)) return [x, y];
     }
     return [60 + Math.random() * 270, top + 90];
   };
   const drop = () => {
-    if (cur !== 'world' || (G.today.c3 || 0) + coins.length >= CAP || coins.length >= 3) return;
+    if (cur !== 'world') return;
+    if ((G.today.c3 || 0) + coins.length >= grown() || coins.length >= 3) return paintSprout();
     const [x, y] = spot(), c = T3.coin(pg, { x, y, size: 46, cls: 'pop' });
     c.x = x; c.y = y; coins.push(c);
     c.addEventListener('animationend', () => c.classList.remove('pop'), { once: true });
@@ -171,11 +184,14 @@ LIFE.world = pg => {
       if (CLOUD.on) CLOUD.claim('garden').catch(e => toast(e.message));   // the server pays (and keeps the count)
       if (!busy && !petting) { eli.setFace(x < eli.x ? -1 : 1); eli.pose('cheer1'); eli.jump(26, 380).then(() => eli.pose(rest)); }
       if (G.today.c3 >= CAP) eli.say('เก็บครบแล้ววันนี้! พรุ่งนี้มาใหม่นะ', 1800);
+      else if (!coins.length && G.today.c3 >= grown()) eli.say(`เดินอีก ${fmt(toNext())} ก้าว เหรียญถัดไปจะงอกนะ 🌱`, 2200);
       later(800, () => c.remove());
-      later(5000, drop);
+      later(900, paintSprout);
     });
+    paintSprout();
   };
   later(1100, drop); later(1500, drop); later(1900, drop);
+  every(2000, drop);   // steps that arrive while the page is open (Health, the demo panel) grow the next coin right here
   // coins in front of / behind ELi depending on who is nearer
   T3.on(() => coins.forEach(c => c.classList.toggle('front', c.y > eli.y)));
   // cards
@@ -183,6 +199,7 @@ LIFE.world = pg => {
   $('#whDq', pg).onclick = () => { const b = base(t), m = LPX.mult(G.streak); openSheet(`<h4>Daily Quest ${qDone}/2</h4>
     <div class="wq-row ${t.steps >= 7000 ? 'ok' : ''}">${wi('w_shoe')}<div><b>Step quest</b><span>เดินครบ 7,000 ก้าว · ตอนนี้ ${fmt(t.steps)}</span></div><em>+1 coin</em></div>
     <div class="wq-row ${t.sleep >= 7 ? 'ok' : ''}">${wi('w_moonz')}<div><b>Sleep recovery quest</b><span>นอน 7–9 ชม. · เมื่อคืน ${t.sleep} ชม.</span></div><em>+1 coin</em></div>
+    <div class="wq-row ${(t.c3 || 0) >= CAP ? 'ok' : ''}">${wi('w_coin')}<div><b>เหรียญงอกในสวน</b><span>ทุก ${fmt(PER)} ก้าว งอก 1 เหรียญ · เก็บแล้ว ${t.c3 || 0}/${CAP}</span></div><em>+1 coin</em></div>
     <div class="wq-lp"><div class="h"><b>Life Power วันนี้</b><em>+${fmt(earnedToday())} LP</em></div>
       <div class="parts"><span><b>${LPX.walk(t.steps)}/40</b>ก้าวเดิน</span><span><b>${LPX.sleep(t.sleep)}/40</b>การนอน</span><span><b>${LPX.app(t)}/20</b>ลูบน้อง + ส่งพลังใจ</span></div>
       <div class="m">ฐาน ${b}/100 × <span class="fire">🔥 ${G.streak} วัน ×${m.toFixed(2)}</span> เข้าแอปทุกวัน ตัวคูณยิ่งสูง (สูงสุด ×2.5)</div></div>

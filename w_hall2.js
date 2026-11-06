@@ -15,7 +15,8 @@ const HF = [   // friends (mock): the doc's two stories are ต้น (away 3 mo
 ];
 const hallMe = () => ({ id: 'me', n: 'คุณ', img: G.citizen.photo || 'assets/w_avatar.webp', total: G.total, week: G.weekLP + earnedToday(), me: true });
 let HALL = null;   // the app: me + friends + the overall top 20 from the server (null until the first load)
-const hallRank = mode => (CLOUD.on ? [...(HALL || []).filter(r => !r.me), { ...hallMe(), img: G.citizen.photo || 'assets/w_avatar.webp' }] : [...HF.map(f => ({ ...f, img: `assets/${f.av}.webp` })), hallMe()])
+const HBLK = new Set();   // the demo: people blocked on this visit (the app keeps blocks on the server)
+const hallRank = mode => (CLOUD.on ? [...(HALL || []).filter(r => !r.me), { ...hallMe(), img: G.citizen.photo || 'assets/w_avatar.webp' }] : [...HF.filter(f => !HBLK.has(f.id)).map(f => ({ ...f, img: `assets/${f.av}.webp` })), hallMe()])
   .sort((a, b) => mode === 'week' ? b.week - a.week : b.total - a.total);
 LIFE.hall = pg => {
   pg.classList.add('w-hall2');
@@ -52,11 +53,42 @@ LIFE.hall = pg => {
       <span class="mid"><b><span class="nmx">${esc(r.n)}</span><small class="lvc t-${tk(r)}">Lv.${lv(r)}</small></b><span class="bar"><i data-w="${val(r) / mx * 100}"></i></span></span><span class="lp">${fmt(val(r))}</span>
       ${r.me ? `<span class="you" title="Streak">🔥${G.streak} <small>×${LPX.mult(G.streak).toFixed(2)}</small></span>` : `<button class="ht ${G.today.sentTo[r.id] ? 'on' : ''}" aria-label="ส่งพลังใจ">${heart}<span>${G.today.sentTo[r.id] ? 'ส่งแล้ว' : 'ส่งพลังใจ'}</span></button>`}</div>`).join('') +
       `<button class="h2-inv press" id="hhInv"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-7 2-7 5v2h11.3A6.5 6.5 0 0 1 13 13.4 12 12 0 0 0 9 13zm9 0v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>ชวนเพื่อนมาแข่งใน Hero Hall</button>
-      <p class="h2-note">${mode === 'week' ? 'คะแนนสัปดาห์ = Life Power ที่ได้สัปดาห์นี้ (เริ่มใหม่ทุกวันจันทร์) · คนที่หายไปได้ 0 · ยิ่งเข้าติดต่อกัน ตัวคูณ Streak ยิ่งสูง (สูงสุด ×2.5)' : 'ตลอดกาล = Life Power สะสมทั้งหมด · หายไปเกิน 3 วันพลังจะค่อย ๆ สลาย คนใหม่ที่สม่ำเสมอจึงแซงได้ · Lv.30 ขึ้นไปได้ปักหมุดถาวร'}</p>`;
+      <p class="h2-note">${mode === 'week' ? 'คะแนนสัปดาห์ = Life Power ที่ได้สัปดาห์นี้ (เริ่มใหม่ทุกวันจันทร์) · คนที่หายไปได้ 0 · ยิ่งเข้าติดต่อกัน ตัวคูณ Streak ยิ่งสูง (สูงสุด ×2.5)' : 'ตลอดกาล = Life Power สะสมทั้งหมด · หายไปเกิน 3 วันพลังจะค่อย ๆ สลาย คนใหม่ที่สม่ำเสมอจึงแซงได้ · Lv.30 ขึ้นไปได้ปักหมุดถาวร'}<br>แตะที่ชื่อเพื่อนเพื่อรายงานหรือบล็อก</p>`;
     later(80, () => $$('.h2-row .bar i', pg).forEach(i => i.style.width = i.dataset.w + '%'));
-    $$('.h2-p', pg).forEach(a => a.onclick = () => { if (!top[a.dataset.i]) return invite(); SFX.pop(); a.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)' }, { transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' }); toast(`${who(top[a.dataset.i])} · ${fmt(val(top[a.dataset.i]))} LP`); });
-    $$('.h2-row .av, .h2-leg', pg).forEach(a => a.onclick = () => { const r = all.find(x => x.id === a.closest('[data-id]').dataset.id); SFX.pop(); toast(who(r)); });
+    $$('.h2-p', pg).forEach(a => a.onclick = () => { if (!top[a.dataset.i]) return invite(); a.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)' }, { transform: 'translateY(0)' }], { duration: 420, easing: 'ease-out' }); person(top[a.dataset.i]); });
     $('#hhInv', pg).onclick = invite;
+  };
+  // tap someone → their card with รายงาน / บล็อก (other people's names and photos show here, so Google Play asks for both)
+  const person = r => {
+    SFX.pop(); if (r.me) return toast(`${who(r)} · ${fmt(val(r))} LP`);
+    const t = LPX.tier(lv(r));
+    openSheet(`<div class="h2-who"><span class="av t-${tk(r)}"><img src="${safeImg(r.img)}" alt=""></span><div><h4>${esc(r.n)}</h4><p>Lv.${lv(r)} ${t.ic} ${t.name} · ${fmt(r.total)} LP</p></div></div>
+      <button class="btn btn-d press" id="hpRep">รายงานผู้ใช้นี้</button><button class="btn btn-d press" id="hpBlk" style="margin-top:8px">บล็อก</button><button class="btn press" data-close style="margin-top:8px">ปิด</button>`, sh => {
+      $('#hpRep', sh).onclick = () => report(r);
+      $('#hpBlk', sh).onclick = () => openSheet(`<h4>บล็อก ${esc(r.n)}?</h4><p class="wsheet-p">คุณกับ ${esc(r.n)} จะไม่เห็นกันใน Hero Hall ส่งพลังใจหรือเพิ่มเพื่อนกันไม่ได้ ถ้าเป็นเพื่อนกันอยู่จะเลิกเป็นเพื่อน<br>ยกเลิกการบล็อกได้ที่หน้าโปรไฟล์</p>
+        <button class="btn btn-d press" id="hbOk" style="background:#E8453C;color:#fff">บล็อก</button><button class="btn press" data-close style="margin-top:8px">ยกเลิก</button>`, s2 => $('#hbOk', s2).onclick = e => block(r, e.currentTarget));
+    });
+  };
+  const report = r => openSheet(`<h4>รายงาน ${esc(r.n)}</h4><p class="wsheet-p">ทีม eli จะตรวจสอบภายใน 24 ชั่วโมง และลบชื่อหรือรูปที่ไม่เหมาะสม คนที่ถูกรายงานจะไม่รู้ว่าใครรายงาน</p>
+    <div class="h2-why">${[['photo', 'รูปโปรไฟล์ไม่เหมาะสม'], ['name', 'ชื่อไม่เหมาะสม'], ['other', 'อื่น ๆ']].map(([k, n], i) => `<label><input type="radio" name="hrWhy" value="${k}" ${i ? '' : 'checked'}><span>${n}</span></label>`).join('')}</div>
+    <textarea class="s2-delin h2-rnote" id="hrNote" rows="2" maxlength="300" placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)"></textarea>
+    <button class="btn btn-o press" id="hrGo" style="margin-top:12px">ส่งรายงาน</button><button class="btn press" data-close style="margin-top:8px">ยกเลิก</button>`, sh => {
+    $('#hrGo', sh).onclick = async e => {
+      const b = e.currentTarget; if (b.disabled) return; b.disabled = true;
+      try { if (CLOUD.on) await CLOUD.report(r.id, $('input[name=hrWhy]:checked', sh).value, $('#hrNote', sh).value.trim()); }
+      catch (err) { b.disabled = false; return toast(err.message); }
+      SFX.chime();
+      openSheet(`<h4>ส่งรายงานแล้ว ขอบคุณนะ 💙</h4><p class="wsheet-p">อยากบล็อก ${esc(r.n)} ด้วยไหม คุณจะไม่เห็นกันใน Hero Hall อีก</p>
+        <button class="btn btn-d press" id="hrBlk">บล็อกด้วย</button><button class="btn press" data-close style="margin-top:8px">ไม่เป็นไร</button>`, s2 => $('#hrBlk', s2).onclick = e2 => block(r, e2.currentTarget));
+    };
+  });
+  const block = async (r, b) => {
+    if (b.disabled) return; b.disabled = true;
+    try { if (CLOUD.on) await CLOUD.block(r.id); else HBLK.add(r.id); }
+    catch (err) { b.disabled = false; return toast(err.message); }
+    closeSheet(); toast(`บล็อก ${r.n} แล้ว`);
+    if (CLOUD.on) { HALL = (HALL || []).filter(x => x.id !== r.id); refresh(); }
+    draw();
   };
   // invite: share my Eli Citizen ID / link; add a friend by theirs (the app). The demo just says it was sent.
   const invite = () => {
@@ -80,7 +112,8 @@ LIFE.hall = pg => {
   draw(); refresh();
   $$('#hhSeg button', pg).forEach(b => b.onclick = () => { mode = b.dataset.m; SFX.pop(); $$('#hhSeg button', pg).forEach(x => x.classList.toggle('on', x === b)); $('#hhSeg', pg).classList.toggle('all', mode === 'all'); draw(); });
   $('#hhRows', pg).addEventListener('click', e => {
-    const b = e.target.closest('.ht'); if (!b) return;
+    const b = e.target.closest('.ht');
+    if (!b) { const row = e.target.closest('[data-id]'); row && person(hallRank(mode).find(x => x.id === row.dataset.id)); return; }
     const id = b.closest('.h2-row').dataset.id;
     if (G.today.sentTo[id]) return toast('ส่งพลังใจให้เพื่อนคนนี้แล้ววันนี้ 💙');
     const order = () => hallRank(mode).map(r => r.id).join(), was = order(), e0 = earnedToday();
